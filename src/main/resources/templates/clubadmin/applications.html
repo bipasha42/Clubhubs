@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Applications</title>
+    <style>
+        body { font-family: system-ui, sans-serif; margin: 24px; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; vertical-align: top; }
+        th { background:#f5f5f5; text-align:left; }
+        select, button { font-size: 0.95em; }
+        .msg { white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+<h2>Club Applications</h2>
+<p><a th:href="@{/club/feed}">← Back to admin feed</a></p>
+
+<table>
+    <thead>
+    <tr>
+        <th>Applicant</th>
+        <th>Email</th>
+        <th>Message</th>
+        <th>Status</th>
+        <th>Applied</th>
+        <th>Processed</th>
+        <th>Action</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="a : ${apps.content}">
+        <td th:text="${a.fullName}">Name</td>
+        <td th:text="${a.email}">email@example.com</td>
+        <td class="msg" th:text="${a.applicationText}">message...</td>
+        <td th:text="${a.status}">PENDING</td>
+        <td th:text="${#temporals.format(a.appliedAt, 'yyyy-MM-dd HH:mm')}">time</td>
+        <td th:text="${a.processedAt != null ? #temporals.format(a.processedAt, 'yyyy-MM-dd HH:mm') : '-'}">-</td>
+        <td>
+            <form th:action="@{'/club/applications/' + ${a.applicationId} + '/status'}" method="post" style="margin:0;">
+                <select name="status">
+                    <option value="PENDING" th:selected="${a.status.name() == 'PENDING'}">PENDING</option>
+                    <option value="ACCEPTED" th:selected="${a.status.name() == 'ACCEPTED'}">ACCEPTED</option>
+                    <option value="REJECTED" th:selected="${a.status.name() == 'REJECTED'}">REJECTED</option>
+                </select>
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="submit">Update</button>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<nav th:if="${apps.totalPages > 1}" style="margin-top: 14px;">
+    <a th:if="${!apps.first}" th:href="@{/club/applications(page=${page-1}, size=${size})}">Prev</a>
+    <span>Page <span th:text="${apps.number + 1}"></span> of <span th:text="${apps.totalPages}"></span></span>
+    <a th:if="${!apps.last}" th:href="@{/club/applications(page=${page+1}, size=${size})}">Next</a>
+</nav>
+</body>
+</html>

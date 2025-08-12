@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>My Notifications</title>
+    <style>
+        body { font-family: system-ui, sans-serif; margin: 24px; }
+        .toolbar { display:flex; gap:8px; align-items:center; margin-bottom: 12px; }
+        .list { display: flex; flex-direction: column; gap: 10px; }
+        .item { border: 1px solid #ddd; border-radius: 10px; padding: 12px; }
+        .item.unread { background: #f8fbff; }
+        .meta { color:#666; font-size: 0.9em; }
+        form { display:inline; }
+    </style>
+</head>
+<body>
+<h2>My Notifications</h2>
+
+<div class="toolbar">
+    <form th:action="@{/me/notifications/read-all}" method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <button type="submit">Mark all as read</button>
+    </form>
+    <a th:href="@{/student/feed}" style="margin-left:auto;">Back to feed</a>
+</div>
+
+<div th:if="${notifications.empty}">
+    <p>No notifications yet.</p>
+</div>
+
+<div class="list" th:if="${!notifications.empty}">
+    <div th:each="n : ${notifications.content}" class="item" th:classappend="${!n.read} ? ' unread'">
+        <div class="meta">
+            <strong th:text="${n.clubName}">Club</strong>
+            · <span th:text="${n.status}">PENDING</span>
+            · <span th:text="${#temporals.format(n.createdAt, 'yyyy-MM-dd HH:mm')}">time</span>
+        </div>
+        <div style="margin:6px 0;" th:text="${n.message}">Message</div>
+        <div class="actions">
+            <a th:href="@{'/clubs/' + ${n.clubId}}">View club</a>
+            <form th:if="${!n.read}" th:action="@{'/me/notifications/' + ${n.id} + '/read'}" method="post" style="margin-left:8px;">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="submit">Mark as read</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<nav th:if="${notifications.totalPages > 1}" style="margin-top: 14px;">
+    <a th:if="${!notifications.first}" th:href="@{/me/notifications(page=${page-1}, size=${size})}">Prev</a>
+    <span>Page <span th:text="${notifications.number + 1}"></span> of <span th:text="${notifications.totalPages}"></span></span>
+    <a th:if="${!notifications.last}" th:href="@{/me/notifications(page=${page+1}, size=${size})}">Next</a>
+</nav>
+</body>
+</html>
