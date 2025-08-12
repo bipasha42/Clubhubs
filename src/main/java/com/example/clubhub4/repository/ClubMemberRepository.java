@@ -7,9 +7,7 @@ import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 public interface ClubMemberRepository extends JpaRepository<ClubMember, Long> {
 
@@ -46,4 +44,7 @@ public interface ClubMemberRepository extends JpaRepository<ClubMember, Long> {
     Optional<ClubMember> findByClub_IdAndUser_Id(UUID clubId, UUID userId);
 
     long deleteByClub_IdAndUser_Id(UUID clubId, UUID userId);
+
+    @Query(value = "select cm.club_id from clubmember cm where cm.user_id = :userId and cm.club_id in :clubIds", nativeQuery = true)
+    Set<UUID> findMemberClubIds(@Param("userId") UUID userId, @Param("clubIds") Collection<UUID> clubIds);
 }

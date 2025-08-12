@@ -54,6 +54,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/clubs/*/posts/*/delete").authenticated()
                         .requestMatchers(HttpMethod.POST, "/posts/*/comments/*/delete").authenticated()
 
+                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/clubs/*/apply").hasRole("STUDENT")
+                        .requestMatchers(org.springframework.http.HttpMethod.GET,  "/club/applications").hasRole("CLUB_ADMIN")
+                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/club/applications/*/status").hasRole("CLUB_ADMIN")
+
                         .requestMatchers("/student/**").hasRole("STUDENT")
                         .requestMatchers("/club/**").hasRole("CLUB_ADMIN")
                         .requestMatchers(HttpMethod.POST, "/club/posts/**").hasRole("CLUB_ADMIN")

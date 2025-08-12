@@ -1,5 +1,6 @@
 package com.example.clubhub4.controller;
 
+import com.example.clubhub4.service.ApplicationService;
 import com.example.clubhub4.service.AuthorPostService;
 import com.example.clubhub4.service.ExploreService;
 import com.example.clubhub4.dto.*;
@@ -28,6 +29,8 @@ public class PublicClubController {
     private final ExploreService exploreService;
     private final MemberPostingService memberPostingService;
     private final AuthorPostService authorPostService;
+    private final ApplicationService applicationService;
+
 
 
     @GetMapping("/clubs/{clubId}")
@@ -40,6 +43,12 @@ public class PublicClubController {
         var clubCard = exploreService.getClubCard(clubId);
         Page<PostCardView> posts = exploreService.listClubPosts(clubId, page, size);
         boolean isFollowing = principal != null && exploreService.isFollowing(clubId, principal.getId());
+
+        boolean canApply = principal != null && applicationService.canApply(principal.getId(), clubId);
+        var appStatus = (principal != null) ? applicationService.applicationStatus(principal.getId(), clubId) : java.util.Optional.empty();
+
+        model.addAttribute("canApplyToClub", canApply);
+        model.addAttribute("applicationStatus", appStatus.orElse(null));
 
         String back = request.getRequestURI();
         if (request.getQueryString() != null) back += "?" + request.getQueryString();
@@ -196,5 +205,13 @@ public class PublicClubController {
         // We need the clubId to redirect; easiest: reload details
         var pd = exploreService.getPostDetails(postId, principal.getId());
         return "redirect:/clubs/" + pd.clubId() + "/posts/" + postId + "?commentDeleted#comments";
+    }
+
+    @PostMapping("/clubs/{clubId}/apply")
+    public String apply(@PathVariable UUID clubId,
+                        @RequestParam(value = "applicationText", required = false) String text,
+                        @AuthenticationPrincipal com.example.clubhub4.security.AppUserPrincipal principal) {
+        applicationService.apply(principal.getId(), clubId, text);
+        return "redirect:/clubs/" + clubId + "?applied";
     }
 }

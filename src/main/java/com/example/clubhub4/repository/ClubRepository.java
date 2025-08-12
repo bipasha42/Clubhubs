@@ -8,8 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 public interface ClubRepository extends JpaRepository<Club, UUID> {
 
@@ -186,5 +185,16 @@ public interface ClubRepository extends JpaRepository<Club, UUID> {
                                                   @Param("universityId") UUID universityId,
                                                   Pageable pageable);
     boolean existsByIdAndAdmin_Id(UUID id, UUID adminUserId);
+
+    @Query(value = """
+        select c.id
+        from club c
+        join users u on u.id = :userId
+        where c.id in :clubIds
+          and c.university_id = u.university_id
+          and not exists (select 1 from clubmember m where m.club_id = c.id and m.user_id = :userId)
+          and not exists (select 1 from clubapplication a where a.club_id = c.id and a.user_id = :userId)
+        """, nativeQuery = true)
+    Set<UUID> findEligibleApplyClubIds(@Param("userId") UUID userId, @Param("clubIds") Collection<UUID> clubIds);
 
 }
