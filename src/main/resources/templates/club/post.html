@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title th:text="${post.clubName}">Post</title>
+    <style>
+        body { font-family: system-ui, sans-serif; margin: 24px; }
+        .meta { color: #666; font-size: 0.9em; margin-bottom: 6px; }
+        .comment { border-top: 1px solid #eee; padding: 8px 0; }
+        .like { margin: 8px 0; }
+        .ok { color: #0a7f27; }
+    </style>
+</head>
+<body>
+<p><a th:href="@{'/clubs/' + ${post.clubId}}">← Back to club</a></p>
+
+<h2 th:text="${post.clubName}">Club Name</h2>
+
+<div class="meta">
+    <span th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}">Time</span>
+    · <span th:text="${post.likeCount}">0</span> likes
+    · <span th:text="${post.commentCount}">0</span> comments
+</div>
+
+<!-- Author actions -->
+<div th:if="${isAuthor}" style="margin:8px 0;">
+    <a th:href="@{'/clubs/' + ${post.clubId} + '/posts/' + ${post.postId} + '/edit'}">Edit post</a>
+    <form th:action="@{'/clubs/' + ${post.clubId} + '/posts/' + ${post.postId} + '/delete'}" method="post" style="display:inline; margin-left:8px;">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <button type="submit" onclick="return confirm('Delete this post?');">Delete post</button>
+    </form>
+</div>
+
+<pre style="white-space:pre-wrap;" th:text="${post.content}">Post content...</pre>
+
+<div class="like">
+    <form th:action="@{'/posts/' + ${post.postId} + '/like'}" method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <button type="submit" th:text="${post.likedByCurrentUser} ? 'Unlike' : 'Like'">Like</button>
+    </form>
+</div>
+
+<h3 id="comments">Comments</h3>
+<div th:if="${param.commentDeleted}">
+    <p class="ok">Comment deleted.</p>
+</div>
+<div th:if="${param.updated}">
+    <p class="ok">Post updated.</p>
+</div>
+
+<div th:if="${#lists.isEmpty(comments)}">
+    <p>No comments yet.</p>
+</div>
+
+<div th:each="c : ${comments}" class="comment">
+    <div class="meta">
+        <strong th:text="${c.authorFullName}">Author</strong>
+        · <span th:text="${#temporals.format(c.createdAt, 'yyyy-MM-dd HH:mm')}">Time</span>
+
+        <!-- Delete comment: allowed for club admin or post author -->
+        <span th:if="${(isClubAdmin ?: false) or (isAuthor ?: false)}" style="float:right;">
+      <form th:action="@{'/posts/' + ${post.postId} + '/comments/' + ${c.id} + '/delete'}" method="post" style="display:inline;">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <button type="submit" onclick="return confirm('Delete this comment?');">Delete</button>
+      </form>
+    </span>
+    </div>
+    <div th:text="${c.content}">Comment text</div>
+</div>
+
+<div style="margin-top:10px;">
+    <form th:action="@{'/posts/' + ${post.postId} + '/comments'}" method="post">
+        <textarea name="content" rows="3" style="width:100%;" placeholder="Write a comment..." required></textarea>
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <div style="margin-top:8px;">
+            <button type="submit">Comment</button>
+        </div>
+    </form>
+</div>
+</body>
+</html>

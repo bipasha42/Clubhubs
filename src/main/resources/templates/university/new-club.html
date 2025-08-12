@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Create Club + Club Admin</title>
+    <style>
+        body { font-family: system-ui, sans-serif; margin: 24px; }
+        fieldset { margin-bottom: 16px; }
+        label { display:block; margin-top: 8px; }
+        input, textarea { width: 360px; max-width: 100%; }
+        .err { color: #b00020; }
+        .ok { color: #0a7f27; }
+    </style>
+</head>
+<body>
+<h2>Create a new Club and its Club Admin</h2>
+
+<div th:if="${param.success}">
+    <p class="ok">Club and Club Admin created successfully.</p>
+</div>
+<div th:if="${error}">
+    <p class="err" th:text="${error}">Error</p>
+</div>
+
+<form th:action="@{/university/clubs}" th:object="${form}" method="post">
+    <fieldset>
+        <legend>Club details</legend>
+        <label>Club name</label>
+        <input th:field="*{clubName}" required>
+        <div class="err" th:if="${#fields.hasErrors('clubName')}" th:errors="*{clubName}"></div>
+
+        <label>Description</label>
+        <textarea th:field="*{description}" rows="4"></textarea>
+
+        <label>Logo URL (optional)</label>
+        <input th:field="*{logoUrl}">
+
+        <label>Banner URL (optional)</label>
+        <input th:field="*{bannerUrl}">
+    </fieldset>
+
+    <fieldset>
+        <legend>Club Admin account</legend>
+        <label>Email</label>
+        <input th:field="*{adminEmail}" type="email" required>
+        <div class="err" th:if="${#fields.hasErrors('adminEmail')}" th:errors="*{adminEmail}"></div>
+
+        <label>First name</label>
+        <input th:field="*{adminFirstName}" required>
+        <div class="err" th:if="${#fields.hasErrors('adminFirstName')}" th:errors="*{adminFirstName}"></div>
+
+        <label>Last name</label>
+        <input th:field="*{adminLastName}" required>
+        <div class="err" th:if="${#fields.hasErrors('adminLastName')}" th:errors="*{adminLastName}"></div>
+
+        <label>Password</label>
+        <input th:field="*{adminPassword}" type="password" required>
+        <div class="err" th:if="${#fields.hasErrors('adminPassword')}" th:errors="*{adminPassword}"></div>
+
+        <label>Confirm password</label>
+        <input th:field="*{adminConfirmPassword}" type="password" required>
+        <div class="err" th:if="${#fields.hasErrors('adminConfirmPassword')}" th:errors="*{adminConfirmPassword}"></div>
+    </fieldset>
+
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+    <button type="submit">Create club and admin</button>
+</form>
+
+<p><a th:href="@{/university/clubs}">Back</a></p>
+</body>
+</html>

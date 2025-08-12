@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Edit Post</title>
+    <style>
+        body { font-family: system-ui, sans-serif; margin: 24px; }
+        textarea { width: 100%; max-width: 800px; height: 220px; }
+    </style>
+</head>
+<body>
+<p><a th:href="@{'/clubs/' + ${clubId} + '/posts/' + ${postId}}">← Back</a></p>
+<h2>Edit Post</h2>
+
+<form th:action="@{'/clubs/' + ${clubId} + '/posts/' + ${postId}}" method="post">
+    <textarea name="content" required th:text="${content}">Content</textarea>
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+    <div style="margin-top:10px;">
+        <button type="submit">Save changes</button>
+        <a th:href="@{'/clubs/' + ${clubId} + '/posts/' + ${postId}}" style="margin-left:8px;">Cancel</a>
+    </div>
+</form>
+</body>
+</html>

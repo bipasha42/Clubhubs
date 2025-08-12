@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Clubs</title>
+    <style>
+        body { font-family: system-ui, sans-serif; margin: 24px; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; }
+        th { background: #f5f5f5; text-align: left; }
+        nav a { margin: 0 6px; }
+    </style>
+</head>
+<body>
+<h2>Your University Clubs</h2>
+
+<table>
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Admin email</th>
+        <th>Admin</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="c : ${clubs.content}">
+        <td th:text="${c.name}">Club Name</td>
+        <td th:text="${c.adminEmail}">admin@example.com</td>
+        <td th:text="${c.adminFullName}">First Last</td>
+        <td>
+            <a th:href="@{'/university/clubs/' + ${c.id} + '/manage'}">Manage</a>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<nav th:if="${clubs.totalPages > 1}" style="margin-top: 12px;">
+    <a th:if="${!clubs.first}" th:href="@{/university/clubs(page=${page-1}, size=${size})}">Prev</a>
+    <span>Page <span th:text="${clubs.number + 1}"></span> of <span th:text="${clubs.totalPages}"></span></span>
+    <a th:if="${!clubs.last}" th:href="@{/university/clubs(page=${page+1}, size=${size})}">Next</a>
+</nav>
+
+<p style="margin-top: 16px;">
+    <a th:href="@{/university/clubs/new}">+ Create a new club</a>
+</p>
+
+</body>
+</html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClubHub - Connect, Share, Grow</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="logo">ClubHub</div>
+        <div class="nav-links">
+            <a href="/dashboard" class="nav-link">Home</a>
+            <a href="/explore/clubs" class="nav-link">Explore</a>
+            <a href="/my-clubs" class="nav-link">My Clubs</a>
+            <a href="/profile" class="nav-link">Profile</a>
+        </div>
+    </div>
+</nav>
+
+<div class="hero-section">
+    <div class="hero-content">
+        <h1 class="hero-title">Welcome to ClubHub</h1>
+        <p class="hero-subtitle">Connect with communities, share your passion, and grow together</p>
+        <div class="auth-buttons">
+            <a href="/login" class="btn btn-primary">Login</a>
+            <a href="/signup" class="btn btn-secondary">Sign Up</a>
+        </div>
+    </div>
+</div>
+
+<div class="main-content">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">Discover Communities</h2>
+            <p class="section-subtitle">Join vibrant communities and connect with like-minded people across universities</p>
+        </div>
+
+        <div class="clubs-grid">
+            <div class="club-card" th:each="club : ${clubs}">
+                <div class="club-header">
+                    <div class="club-avatar" th:text="${club.name.substring(0,1).toUpperCase()}">T</div>
+                    <div class="club-info">
+                        <h3 th:text="${club.name}">Tech Enthusiasts</h3>
+                        <div class="club-stats">
+                                <span class="stat">
+                                    <span>👥</span>
+                                    <span th:text="${club.memberCount} + ' members'">1.2k members</span>
+                                </span>
+                            <span class="stat">
+                                    <span>📝</span>
+                                    <span th:text="${club.postCount} + ' posts'">45 posts</span>
+                                </span>
+                        </div>
+                    </div>
+                </div>
+                <p class="club-description" th:text="${club.description}">
+                    A community for technology enthusiasts to share knowledge, discuss trends, and collaborate on projects.
+                </p>
+                <div class="club-tags">
+                    <span class="tag" th:each="tag : ${club.tags}" th:text="${tag}">Technology</span>
+                </div>
+                <div class="club-actions">
+                    <a th:href="@{/club/{id}(id=${club.id})}" class="btn-small btn-explore">Explore</a>
+                    <button class="btn-small btn-join">Join Club</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/scripts.js}"></script>
+</body>
+</html>

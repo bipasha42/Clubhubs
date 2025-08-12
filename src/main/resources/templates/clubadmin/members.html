@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title th:text="${club.name} + ' — Members'">Members</title>
+    <style>
+        body { font-family: system-ui, sans-serif; margin: 24px; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; }
+        th { background: #f5f5f5; text-align: left; }
+        nav a { margin: 0 6px; }
+    </style>
+</head>
+<body>
+<h2 th:text="${club.name} + ' — Members'">Members</h2>
+<p>
+    <a th:href="@{/club/feed}">← Back to feed</a>
+</p>
+
+<div th:if="${param.removed}">
+    <p style="color:green;">Member removed.</p>
+</div>
+<div th:if="${param.error}">
+    <p style="color:#b00020;" th:text="${param.error}">Error</p>
+</div>
+
+<table>
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Member since</th>
+        <th>Action</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="m : ${members.content}">
+        <td th:text="${m.fullName}">Name</td>
+        <td th:text="${m.email}">email@example.com</td>
+        <td th:text="${#temporals.format(m.memberSince, 'yyyy-MM-dd HH:mm')}">time</td>
+        <td>
+            <form th:action="@{'/club/members/' + ${m.userId} + '/remove'}" method="post" style="margin:0;">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="submit" onclick="return confirm('Remove this member?');">Remove</button>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<nav th:if="${members.totalPages > 1}" style="margin-top: 14px;">
+    <a th:if="${!members.first}" th:href="@{/club/members(page=${page-1}, size=${size})}">Prev</a>
+    <span>Page <span th:text="${members.number + 1}"></span> of <span th:text="${members.totalPages}"></span></span>
+    <a th:if="${!members.last}" th:href="@{/club/members(page=${page+1}, size=${size})}">Next</a>
+</nav>
+</body>
+</html>

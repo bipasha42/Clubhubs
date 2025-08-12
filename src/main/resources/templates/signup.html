@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Sign up</title></head>
+<body>
+<h2>Create your account</h2>
+
+<div th:if="${error}">
+    <p style="color:red;" th:text="${error}">Error</p>
+</div>
+
+<form th:action="@{/signup}" th:object="${form}" method="post">
+    <label>Email</label>
+    <input th:field="*{email}" type="email" required>
+    <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}" style="color:red;"></div>
+    <br/>
+
+    <label>First name</label>
+    <input th:field="*{firstName}" required>
+    <div th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}" style="color:red;"></div>
+    <br/>
+
+    <label>Last name</label>
+    <input th:field="*{lastName}" required>
+    <div th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}" style="color:red;"></div>
+    <br/>
+
+    <label>Password</label>
+    <input th:field="*{password}" type="password" required>
+    <div th:if="${#fields.hasErrors('password')}" th:errors="*{password}" style="color:red;"></div>
+    <br/>
+
+    <label>Confirm password</label>
+    <input th:field="*{confirmPassword}" type="password" required>
+    <div th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}" style="color:red;"></div>
+    <br/>
+
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+    <button type="submit">Sign up</button>
+</form>
+
+<p>Already have an account? <a th:href="@{/login}">Log in</a></p>
+</body>
+</html>

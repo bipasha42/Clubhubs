@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Your Feed</title>
+    <style>
+        body { font-family: system-ui, sans-serif; margin: 24px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; }
+        .card { border: 1px solid #ddd; border-radius: 10px; padding: 12px; }
+        .meta { color: #666; font-size: 0.9em; margin-bottom: 6px; }
+        nav a { margin: 0 6px; }
+    </style>
+</head>
+<body>
+<h2>Your Feed</h2>
+
+<p style="margin:8px 0;">
+    <a th:href="@{/me/posts/new}">+ Create new post on my club</a>
+</p>
+
+<div th:if="${posts.empty}">
+    <p>No posts yet. Follow clubs or join one to see posts here.</p>
+</div>
+
+<div class="grid" th:if="${!posts.empty}">
+    <div class="card" th:each="p : ${posts.content}">
+        <div class="meta">
+            <strong><a th:href="@{'/clubs/' + ${p.clubId}}" th:text="${p.clubName}">Club</a></strong>
+            · <span th:text="${#temporals.format(p.createdAt, 'yyyy-MM-dd HH:mm')}">Time</span>
+            · <span th:text="${p.likeCount}">0</span> likes
+            · <span th:text="${p.commentCount}">0</span> comments
+        </div>
+        <div>
+            <a th:href="@{'/clubs/' + ${p.clubId} + '/posts/' + ${p.postId}}">
+                <span th:text="${p.preview}">Post preview</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<nav th:if="${posts.totalPages > 1}" style="margin-top: 14px;">
+    <a th:if="${!posts.first}" th:href="@{/student/feed(page=${page-1}, size=${size})}">Prev</a>
+    <span>Page <span th:text="${posts.number + 1}"></span> of <span th:text="${posts.totalPages}"></span></span>
+    <a th:if="${!posts.last}" th:href="@{/student/feed(page=${page+1}, size=${size})}">Next</a>
+</nav>
+</body>
+</html>
