@@ -17,7 +17,8 @@
     <span th:text="${club.followerCount}">0</span> followers ·
     <span th:text="${club.memberCount}">0</span> members ·
     <a th:href="@{'/clubs/' + ${club.id}}">View public page</a> ·
-    <a th:href="@{/club/members}">Members</a>
+    <a th:href="@{/club/members}">Members</a> ·
+    <a th:href="@{/club/applications}">Club Applications</a>
 </div>
 
 <div th:if="${param.created}"><p style="color:green;">Post created.</p></div>

@@ -47,6 +47,10 @@ public class SecurityConfig {
                         .requestMatchers(org.springframework.http.HttpMethod.POST, "/posts/*/like", "/posts/*/comments").authenticated()
                         .requestMatchers(HttpMethod.GET,  "/me/posts/new").authenticated()
                         .requestMatchers(HttpMethod.POST, "/me/posts").authenticated()
+
+                        .requestMatchers(HttpMethod.GET,  "/me/notifications").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/me/notifications/**").authenticated()
+
                         .requestMatchers(HttpMethod.POST, "/clubs/*/follow").authenticated()
                         .requestMatchers(HttpMethod.POST, "/clubs/*/posts").authenticated()
                         .requestMatchers(HttpMethod.GET,  "/clubs/*/posts/*/edit").authenticated()
@@ -57,6 +61,7 @@ public class SecurityConfig {
                         .requestMatchers(org.springframework.http.HttpMethod.POST, "/clubs/*/apply").hasRole("STUDENT")
                         .requestMatchers(org.springframework.http.HttpMethod.GET,  "/club/applications").hasRole("CLUB_ADMIN")
                         .requestMatchers(org.springframework.http.HttpMethod.POST, "/club/applications/*/status").hasRole("CLUB_ADMIN")
+
 
                         .requestMatchers("/student/**").hasRole("STUDENT")
                         .requestMatchers("/club/**").hasRole("CLUB_ADMIN")
