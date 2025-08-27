@@ -42,13 +42,14 @@ ClubHub/
 │── pom.xml # Maven dependencies
 │── README.md # Documentation
 
----
-<img width="1920" height="1080" alt="Screenshot (171)" src="https://github.com/user-attachments/assets/7c172df6-ff49-491b-ba2b-bdeca23fe05f" />
 
-<img width="1920" height="1080" alt="Screenshot (172)" src="https://github.com/user-attachments/assets/fe66a65e-014d-46ca-8ba9-140eeb0b638c" />
+<img width="1920" height="851" alt="Screenshot (171)" src="https://github.com/user-attachments/assets/95bc9768-56ae-4cb1-8f34-6ac6f4b5b854" />
 
-<img width="1920" height="1080" alt="Screenshot (173)" src="https://github.com/user-attachments/assets/4c571df7-ba6f-4dda-9c51-d5622a35bb18" />
-<img width="1920" height="1080" alt="Screenshot (174)" src="https://github.com/user-attachments/assets/c07bed13-8add-4f26-8649-c92170964bea" />
+<img width="1899" height="862" alt="Screenshot (172)" src="https://github.com/user-attachments/assets/c97724d3-d6c1-4c99-8e87-b36778152a4b" />
+
+<img width="1920" height="812" alt="Screenshot (173)" src="https://github.com/user-attachments/assets/cd0ad75f-37fa-4111-a716-72812f1dcb76" />
+
+<img width="1920" height="852" alt="Screenshot (174)" src="https://github.com/user-attachments/assets/f519b910-824d-4132-904c-8bffc7c7a4f0" />
 
 ## 🚀 Installation & Setup
 
