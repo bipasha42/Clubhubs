@@ -8,9 +8,9 @@ public record PostDetailsView(
         UUID clubId,
         String clubName,
         String content,
+        String imageUrl,          // <-- add
         OffsetDateTime createdAt,
         long likeCount,
         long commentCount,
-        boolean likedByCurrentUser,
-
-        UUID id) {}
+        boolean likedByCurrentUser
+) {}

@@ -1,60 +1,118 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8"/>
-    <title>Applications</title>
-    <style>
-        body { font-family: system-ui, sans-serif; margin: 24px; }
-        table { border-collapse: collapse; width: 100%; }
-        th, td { border: 1px solid #ddd; padding: 8px; vertical-align: top; }
-        th { background:#f5f5f5; text-align:left; }
-        select, button { font-size: 0.95em; }
-        .msg { white-space: pre-wrap; }
-    </style>
-</head>
+<head th:replace="fragments/common :: head(${club.name} + ' — Applications')"></head>
 <body>
-<h2>Club Applications</h2>
-<p><a th:href="@{/club/feed}">← Back to admin feed</a></p>
+<header th:replace="fragments/common :: nav"></header>
 
-<table>
-    <thead>
-    <tr>
-        <th>Applicant</th>
-        <th>Email</th>
-        <th>Message</th>
-        <th>Status</th>
-        <th>Applied</th>
-        <th>Processed</th>
-        <th>Action</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="a : ${apps.content}">
-        <td th:text="${a.fullName}">Name</td>
-        <td th:text="${a.email}">email@example.com</td>
-        <td class="msg" th:text="${a.applicationText}">message...</td>
-        <td th:text="${a.status}">PENDING</td>
-        <td th:text="${#temporals.format(a.appliedAt, 'yyyy-MM-dd HH:mm')}">time</td>
-        <td th:text="${a.processedAt != null ? #temporals.format(a.processedAt, 'yyyy-MM-dd HH:mm') : '-'}">-</td>
-        <td>
-            <form th:action="@{'/club/applications/' + ${a.applicationId} + '/status'}" method="post" style="margin:0;">
-                <select name="status">
-                    <option value="PENDING" th:selected="${a.status.name() == 'PENDING'}">PENDING</option>
-                    <option value="ACCEPTED" th:selected="${a.status.name() == 'ACCEPTED'}">ACCEPTED</option>
-                    <option value="REJECTED" th:selected="${a.status.name() == 'REJECTED'}">REJECTED</option>
-                </select>
-                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                <button type="submit">Update</button>
-            </form>
-        </td>
-    </tr>
-    </tbody>
-</table>
+<main class="container">
+    <!-- Banner -->
+    <section class="cover">
+        <div class="cover__title" th:text="${club.name}">Club Name</div>
+    </section>
 
-<nav th:if="${apps.totalPages > 1}" style="margin-top: 14px;">
-    <a th:if="${!apps.first}" th:href="@{/club/applications(page=${page-1}, size=${size})}">Prev</a>
-    <span>Page <span th:text="${apps.number + 1}"></span> of <span th:text="${apps.totalPages}"></span></span>
-    <a th:if="${!apps.last}" th:href="@{/club/applications(page=${page+1}, size=${size})}">Next</a>
-</nav>
+    <!-- Community bar -->
+    <section class="community-bar card">
+        <div class="bar-left">
+<!--            <div class="avatar lg">-->
+<!--                <span th:text="${#strings.substring(#strings.trim(club.name), 0, 2)}">CL</span>-->
+<!--            </div>-->
+<!--            <div class="name">-->
+<!--                <span th:text="${club.name}">Club Name</span>-->
+<!--            </div>-->
+        </div>
+        <div class="bar-right">
+            <a class="btn ghost" th:href="@{'/clubs/' + ${club.id}}">View public</a>
+            <a class="btn" th:href="@{/club/posts/new}">+ New post</a>
+        </div>
+    </section>
+
+    <section class="layout-2col">
+        <!-- MAIN -->
+        <section>
+            <h3 class="m-0 mt-2">Membership applications</h3>
+
+            <div th:if="${apps.empty}" class="mt-1">
+                <p class="help">No applications yet.</p>
+            </div>
+
+            <div class="v-stack mt-1" th:if="${!apps.empty}">
+                <article class="card" th:each="a : ${apps.content}">
+                    <div class="h-stack" style="justify-content: space-between;">
+                        <div class="v-stack" style="gap:4px;">
+                            <div class="h-stack" style="gap:10px;">
+                                <strong th:text="${a.fullName}">Applicant Name</strong>
+                                <span class="muted" th:text="${a.email}">email@example.com</span>
+                            </div>
+                            <div class="post-meta">
+                                <span th:text="${#temporals.format(a.appliedAt, 'yyyy-MM-dd HH:mm')}">Applied at</span>
+                                <span class="dot">•</span>
+                                <span>Status:</span>
+                                <span class="badge warn" th:text="${a.status}">PENDING</span>
+                                <span class="dot" th:if="${a.processedAt != null}">•</span>
+                                <span class="muted" th:if="${a.processedAt != null}">
+                  processed <span th:text="${#temporals.format(a.processedAt, 'yyyy-MM-dd HH:mm')}">time</span>
+                </span>
+                            </div>
+                        </div>
+
+                        <!-- Action (only when pending) -->
+                        <div>
+                            <div th:if="${a.status.name() == 'PENDING'}" class="h-stack">
+                                <form th:action="@{'/club/applications/' + ${a.applicationId} + '/status'}" method="post" class="inline">
+                                    <select name="status">
+                                        <option value="ACCEPTED">ACCEPTED</option>
+                                        <option value="REJECTED">REJECTED</option>
+                                    </select>
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                    <button class="btn subtle" type="submit">Update</button>
+                                </form>
+                            </div>
+                            <div th:if="${a.status.name() != 'PENDING'}" class="muted">Processed</div>
+                        </div>
+                    </div>
+
+                    <div class="mt-1">
+                        <div class="help">Message</div>
+                        <div style="white-space: pre-wrap;" th:text="${a.applicationText}">message…</div>
+                    </div>
+                </article>
+            </div>
+
+            <!-- Pagination -->
+            <div class="h-stack center mt-3" th:if="${apps.totalPages > 1}">
+                <a class="btn subtle" th:if="${!apps.first}" th:href="@{/club/applications(page=${page-1}, size=${size})}">Prev</a>
+                <span>Page <strong th:text="${apps.number + 1}"></strong> / <span th:text="${apps.totalPages}"></span></span>
+                <a class="btn subtle" th:if="${!apps.last}" th:href="@{/club/applications(page=${page+1}, size=${size})}">Next</a>
+            </div>
+        </section>
+
+        <!-- SIDEBAR -->
+        <aside class="card sidebar">
+            <h4 class="m-0">Manage</h4>
+            <nav class="sidebar-links mt-1">
+                <a class="side-link" th:href="@{/club/feed}">Feed</a>
+                <a class="side-link" th:href="@{/club/members}">Members</a>
+                <a class="side-link primary" th:href="@{/club/applications}">Applications</a>
+                <a class="side-link" th:href="@{/club/posts/new}">+ New post</a>
+            </nav>
+
+            <hr style="border:0;border-top:1px solid var(--border); margin:12px 0;">
+
+            <h4 class="m-0">Stats</h4>
+            <div class="meta mt-1">
+                <div><strong>University</strong></div>
+                <div th:text="${club.universityName}">University</div>
+            </div>
+            <div class="meta mt-1">
+                <div><strong>Members</strong></div>
+                <div th:text="${club.memberCount}">0</div>
+            </div>
+            <div class="meta mt-1">
+                <div><strong>Followers</strong></div>
+                <div th:text="${club.followerCount}">0</div>
+            </div>
+        </aside>
+    </section>
+</main>
 </body>
 </html>

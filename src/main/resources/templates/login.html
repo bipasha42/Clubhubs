@@ -1,30 +1,65 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title>Login</title></head>
+<head th:replace="fragments/common :: head('Login')"></head>
 <body>
-<h2>Login</h2>
+<header th:replace="fragments/common :: nav"></header>
 
-<div th:if="${param.registered}">
-    <p style="color:green;">Account created! Please log in.</p>
-</div>
-<div th:if="${param.error}">
-    <p style="color:red;">Invalid credentials</p>
-</div>
-<div th:if="${param.logout}">
-    <p>You were logged out.</p>
-</div>
+<main class="auth-page">
+    <section class="auth-card">
+        <div class="auth-brand">
+            <div class="auth-logo">ClubHub</div>
+            <div class="auth-tagline">Sign in to continue</div>
+        </div>
 
-<form th:action="@{/login}" method="post">
-    <label>Email</label>
-    <input type="text" name="email" required>
-    <br/>
-    <label>Password</label>
-    <input type="password" name="password" required>
-    <br/>
-    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-    <button type="submit">Login</button>
-</form>
+        <!-- Inline messages (keeps working with your toasts too) -->
+        <div th:if="${param.registered}" class="auth-alert ok">Account created! Please log in.</div>
+        <div th:if="${param.error}" class="auth-alert err">Invalid email or password.</div>
+        <div th:if="${param.logout}" class="auth-alert ok">You were logged out.</div>
 
-<p>Don’t have an account? <a th:href="@{/signup}">Sign up</a></p>
+        <form class="auth-form" th:action="@{/login}" method="post" autocomplete="on">
+            <div class="auth-field">
+                <input class="auth-input" type="email" name="email" placeholder="Email" required>
+            </div>
+            <div class="auth-field">
+                <input class="auth-input" type="password" name="password" placeholder="Password" required>
+            </div>
+
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+            <button class="btn auth-submit" type="submit">Log in</button>
+
+            <div class="auth-divider">
+                <span>OR</span>
+            </div>
+
+            <div class="auth-secondary">
+                <span>Don’t have an account?</span>
+                <a th:href="@{/signup}">Sign up</a>
+            </div>
+        </form>
+    </section>
+
+<!--    &lt;!&ndash; Demo credentials block &ndash;&gt;-->
+<!--    <section class="auth-card auth-demo">-->
+<!--        <div class="auth-demo-title">Demo credentials</div>-->
+<!--        <div class="auth-demo-row">-->
+<!--            <strong>Student</strong>-->
+<!--            <div>Email: sophia.walker.62@students.u005.edu</div>-->
+<!--            <div>Pass: s162</div>-->
+<!--        </div>-->
+<!--        <div class="auth-demo-sep"></div>-->
+<!--        <div class="auth-demo-row">-->
+<!--            <strong>Club Admin</strong>-->
+<!--            <div>Email: ca1_1@clubs.u001.edu</div>-->
+<!--            <div>Pass: ca1</div>-->
+<!--        </div>-->
+<!--        <div class="auth-demo-sep"></div>-->
+<!--        <div class="auth-demo-row">-->
+<!--            <strong>University Admin</strong>-->
+<!--            <div>Email: jordan.williams.ua1@admin.u001.edu</div>-->
+<!--            <div>Pass: ua1</div>-->
+<!--        </div>-->
+<!--    </section>-->
+</main>
 </body>
 </html>

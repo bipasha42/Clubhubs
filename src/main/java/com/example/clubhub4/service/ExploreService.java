@@ -49,11 +49,11 @@ public class ExploreService {
                 p.getClub().getId(),
                 p.getClub().getName(),
                 p.getContent(),
+                p.getImageUrl(),      // <-- add
                 p.getCreatedAt(),
                 likeCount,
                 commentCount,
-                liked,
-                p.getAuthor().getId() // <-- add author id
+                liked
         );
     }
 

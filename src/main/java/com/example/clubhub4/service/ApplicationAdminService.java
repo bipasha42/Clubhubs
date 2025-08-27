@@ -34,32 +34,40 @@ public class ApplicationAdminService {
         ClubApplication app = clubApplicationRepository.findByIdForAdmin(applicationId, adminUserId)
                 .orElseThrow(() -> new IllegalArgumentException("Application not found"));
 
-        // Update status and processing info
+        // Only allow processing from PENDING -> ACCEPTED/REJECTED exactly once
+        if (app.getStatus() != ApplicationStatus.PENDING) {
+            throw new IllegalStateException("This application has already been processed.");
+        }
+        if (newStatus == ApplicationStatus.PENDING) {
+            throw new IllegalArgumentException("Invalid status transition");
+        }
+
         app.setStatus(newStatus);
         app.setProcessedAt(OffsetDateTime.now());
         User admin = userRepository.findById(adminUserId).orElseThrow();
         app.setProcessedBy(admin);
 
-        // If accepted, add membership
         if (newStatus == ApplicationStatus.ACCEPTED) {
+            // Add membership (idempotent)
             ClubMember m = new ClubMember();
             m.setClub(app.getClub());
             m.setUser(app.getUser());
             m.setMemberSince(OffsetDateTime.now());
             try {
                 clubMemberRepository.save(m);
-            } catch (DataIntegrityViolationException ignore) {
-                // Already a member
-            }
+            } catch (DataIntegrityViolationException ignore) {}
+        } else if (newStatus == ApplicationStatus.REJECTED) {
+            // Ensure membership is removed if it exists (cleanup)
+            clubMemberRepository.deleteByClub_IdAndUser_Id(app.getClub().getId(), app.getUser().getId());
         }
 
         clubApplicationRepository.save(app);
 
-        // Notification to applicant
+        // Notify applicant
         String msg = switch (newStatus) {
             case ACCEPTED -> "Your application to join " + app.getClub().getName() + " has been ACCEPTED.";
             case REJECTED -> "Your application to join " + app.getClub().getName() + " has been REJECTED.";
-            case PENDING  -> "Your application to join " + app.getClub().getName() + " is PENDING.";
+            default -> "Your application to join " + app.getClub().getName() + " is PENDING.";
         };
         Notification n = new Notification();
         n.setApplication(app);

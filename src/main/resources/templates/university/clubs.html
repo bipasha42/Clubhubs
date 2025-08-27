@@ -1,49 +1,68 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8"/>
-    <title>Clubs</title>
-    <style>
-        body { font-family: system-ui, sans-serif; margin: 24px; }
-        table { border-collapse: collapse; width: 100%; }
-        th, td { border: 1px solid #ddd; padding: 8px; }
-        th { background: #f5f5f5; text-align: left; }
-        nav a { margin: 0 6px; }
-    </style>
-</head>
+<head th:replace="fragments/common :: head('University Admin — Clubs')"></head>
 <body>
-<h2>Your University Clubs</h2>
+<header th:replace="fragments/common :: nav"></header>
 
-<table>
-    <thead>
-    <tr>
-        <th>Name</th>
-        <th>Admin email</th>
-        <th>Admin</th>
-        <th>Actions</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="c : ${clubs.content}">
-        <td th:text="${c.name}">Club Name</td>
-        <td th:text="${c.adminEmail}">admin@example.com</td>
-        <td th:text="${c.adminFullName}">First Last</td>
-        <td>
-            <a th:href="@{'/university/clubs/' + ${c.id} + '/manage'}">Manage</a>
-        </td>
-    </tr>
-    </tbody>
-</table>
+<main class="container">
+    <!-- Banner -->
+    <section class="cover">
+        <div class="cover__title">University Admin</div>
+    </section>
 
-<nav th:if="${clubs.totalPages > 1}" style="margin-top: 12px;">
-    <a th:if="${!clubs.first}" th:href="@{/university/clubs(page=${page-1}, size=${size})}">Prev</a>
-    <span>Page <span th:text="${clubs.number + 1}"></span> of <span th:text="${clubs.totalPages}"></span></span>
-    <a th:if="${!clubs.last}" th:href="@{/university/clubs(page=${page+1}, size=${size})}">Next</a>
-</nav>
+    <!-- Bar -->
+    <section class="community-bar card">
+        <div class="bar-left">
+            <div class="avatar lg">🏫</div>
+            <div class="name">Manage clubs</div>
+        </div>
+        <div class="bar-right">
+            <a class="btn" th:href="@{/university/clubs/new}">+ Create a new club</a>
+        </div>
+    </section>
 
-<p style="margin-top: 16px;">
-    <a th:href="@{/university/clubs/new}">+ Create a new club</a>
-</p>
+    <section class="layout-2col">
+        <!-- MAIN -->
+        <section>
+            <h3 class="m-0 mt-2">Your university clubs</h3>
 
+            <div th:if="${clubs.empty}" class="mt-1">
+                <p class="help">No clubs yet.</p>
+            </div>
+
+            <table class="mt-2" th:if="${!clubs.empty}">
+                <thead>
+                <tr><th>Name</th><th>Admin email</th><th>Admin</th><th>Actions</th></tr>
+                </thead>
+                <tbody>
+                <tr th:each="c : ${clubs.content}">
+                    <td th:text="${c.name}">Club Name</td>
+                    <td th:text="${c.adminEmail}">admin@example.com</td>
+                    <td th:text="${c.adminFullName}">First Last</td>
+                    <td>
+                        <a class="btn ghost" th:href="@{'/university/clubs/' + ${c.id} + '/manage'}">Manage</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <!-- Pagination -->
+            <div class="h-stack center mt-3" th:if="${clubs.totalPages > 1}">
+                <a class="btn subtle" th:if="${!clubs.first}" th:href="@{/university/clubs(page=${page-1}, size=${size})}">Prev</a>
+                <span>Page <strong th:text="${clubs.number + 1}"></strong> / <span th:text="${clubs.totalPages}"></span></span>
+                <a class="btn subtle" th:if="${!clubs.last}" th:href="@{/university/clubs(page=${page+1}, size=${size})}">Next</a>
+            </div>
+        </section>
+
+        <!-- SIDEBAR -->
+        <aside class="card sidebar">
+            <h4 class="m-0">Quick actions</h4>
+            <nav class="sidebar-links mt-1">
+                <a class="side-link primary" th:href="@{/university/clubs/new}">+ New club</a>
+                <a class="side-link" th:href="@{/university/clubs}">Refresh</a>
+            </nav>
+        </aside>
+    </section>
+</main>
 </body>
 </html>

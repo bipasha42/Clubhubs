@@ -1,75 +1,282 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ClubHub - Connect, Share, Grow</title>
-    <link rel="stylesheet" th:href="@{/css/styles.css}">
-</head>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="fragments/common :: head('Dashboard')"></head>
 <body>
-<nav class="navbar">
-    <div class="nav-container">
-        <div class="logo">ClubHub</div>
-        <div class="nav-links">
-            <a href="/dashboard" class="nav-link">Home</a>
-            <a href="/explore/clubs" class="nav-link">Explore</a>
-            <a href="/my-clubs" class="nav-link">My Clubs</a>
-            <a href="/profile" class="nav-link">Profile</a>
-        </div>
-    </div>
-</nav>
+<header th:replace="fragments/common :: nav"></header>
 
-<div class="hero-section">
-    <div class="hero-content">
-        <h1 class="hero-title">Welcome to ClubHub</h1>
-        <p class="hero-subtitle">Connect with communities, share your passion, and grow together</p>
-        <div class="auth-buttons">
-            <a href="/login" class="btn btn-primary">Login</a>
-            <a href="/signup" class="btn btn-secondary">Sign Up</a>
-        </div>
-    </div>
-</div>
-
-<div class="main-content">
-    <div class="container">
-        <div class="section-header">
-            <h2 class="section-title">Discover Communities</h2>
-            <p class="section-subtitle">Join vibrant communities and connect with like-minded people across universities</p>
+<main class="dash">
+    <!-- HERO -->
+    <section class="dash-hero">
+        <div class="dash-hero__bg">
+            <div class="blob b1"></div>
+            <div class="blob b2"></div>
+            <div class="blob b3"></div>
         </div>
 
-        <div class="clubs-grid">
-            <div class="club-card" th:each="club : ${clubs}">
-                <div class="club-header">
-                    <div class="club-avatar" th:text="${club.name.substring(0,1).toUpperCase()}">T</div>
-                    <div class="club-info">
-                        <h3 th:text="${club.name}">Tech Enthusiasts</h3>
-                        <div class="club-stats">
-                                <span class="stat">
-                                    <span>👥</span>
-                                    <span th:text="${club.memberCount} + ' members'">1.2k members</span>
-                                </span>
-                            <span class="stat">
-                                    <span>📝</span>
-                                    <span th:text="${club.postCount} + ' posts'">45 posts</span>
-                                </span>
-                        </div>
-                    </div>
-                </div>
-                <p class="club-description" th:text="${club.description}">
-                    A community for technology enthusiasts to share knowledge, discuss trends, and collaborate on projects.
-                </p>
-                <div class="club-tags">
-                    <span class="tag" th:each="tag : ${club.tags}" th:text="${tag}">Technology</span>
-                </div>
-                <div class="club-actions">
-                    <a th:href="@{/club/{id}(id=${club.id})}" class="btn-small btn-explore">Explore</a>
-                    <button class="btn-small btn-join">Join Club</button>
-                </div>
+        <div class="dash-hero__content">
+            <h1 class="dash-title">One home for every university club</h1>
+            <p class="dash-subtitle">Discover, follow, and engage with clubs across universities worldwide.</p>
+
+            <div class="dash-hero__cta">
+                <a class="btn big" th:href="@{/explore/clubs}">Explore clubs</a>
+                <a class="btn big" sec:authorize="hasRole('STUDENT')" th:href="@{/me/posts/new}">+ New post</a>
             </div>
         </div>
-    </div>
-</div>
+    </section>
 
-<script th:src="@{/js/scripts.js}"></script>
+    <!-- QUICK TILES -->
+    <section class="dash-grid reveal">
+        <!-- Student -->
+        <article class="dash-card tilt">
+            <div class="dash-card__icon">🎓</div>
+            <h3 class="dash-card__title">For Students</h3>
+            <p class="dash-card__text">See updates from clubs you follow or joined, and apply to new ones.</p>
+            <div class="dash-card__actions">
+                <a class="btn" th:href="@{/student/feed}" sec:authorize="hasRole('STUDENT')">Open feed</a>
+                <a class="btn ghost" th:href="@{/student/university/clubs}" sec:authorize="hasRole('STUDENT')">My university</a>
+
+                <!-- Guarded if not STUDENT -->
+                <a class="btn disabled" data-requires-role="STUDENT" th:href="@{/student/feed}" sec:authorize="!hasRole('STUDENT')">Open feed</a>
+                <a class="btn ghost disabled" data-requires-role="STUDENT" th:href="@{/student/university/clubs}" sec:authorize="!hasRole('STUDENT')">My university</a>
+            </div>
+        </article>
+
+        <!-- Club admin -->
+        <article class="dash-card tilt">
+            <div class="dash-card__icon">👑</div>
+            <h3 class="dash-card__title">Club Admin</h3>
+            <p class="dash-card__text">Create posts, manage members, and review applications.</p>
+            <div class="dash-card__actions">
+                <a class="btn" th:href="@{/club/feed}" sec:authorize="hasRole('CLUB_ADMIN')">Open admin</a>
+                <a class="btn ghost" th:href="@{/club/applications}" sec:authorize="hasRole('CLUB_ADMIN')">Applications</a>
+
+                <!-- Guarded if not CLUB_ADMIN -->
+                <a class="btn disabled" data-requires-role="CLUB_ADMIN" th:href="@{/club/feed}" sec:authorize="!hasRole('CLUB_ADMIN')">Open admin</a>
+                <a class="btn ghost disabled" data-requires-role="CLUB_ADMIN" th:href="@{/club/applications}" sec:authorize="!hasRole('CLUB_ADMIN')">Applications</a>
+            </div>
+        </article>
+
+        <!-- University admin -->
+        <article class="dash-card tilt">
+            <div class="dash-card__icon">🏫</div>
+            <h3 class="dash-card__title">University Admin</h3>
+            <p class="dash-card__text">Create clubs and manage admin accounts across your university.</p>
+            <div class="dash-card__actions">
+                <a class="btn" th:href="@{/university/clubs}" sec:authorize="hasRole('UNIVERSITY_ADMIN')">Manage clubs</a>
+                <a class="btn ghost" th:href="@{/university/clubs/new}" sec:authorize="hasRole('UNIVERSITY_ADMIN')">Create club</a>
+
+                <!-- Guarded if not UNIVERSITY_ADMIN -->
+                <a class="btn disabled" data-requires-role="UNIVERSITY_ADMIN" th:href="@{/university/clubs}" sec:authorize="!hasRole('UNIVERSITY_ADMIN')">Manage clubs</a>
+                <a class="btn ghost disabled" data-requires-role="UNIVERSITY_ADMIN" th:href="@{/university/clubs/new}" sec:authorize="!hasRole('UNIVERSITY_ADMIN')">Create club</a>
+            </div>
+        </article>
+    </section>
+
+    <!-- FEATURE STRIP -->
+    <section class="dash-strip reveal">
+        <div class="dash-strip__item tilt">
+            <div class="i">🧭</div>
+            <div class="t">Explore and follow clubs</div>
+            <p>Find communities that match your interests and stay updated.</p>
+        </div>
+        <div class="dash-strip__item tilt">
+            <div class="i">💬</div>
+            <div class="t">Post and engage</div>
+            <p>Share updates, photos, and events with your club members.</p>
+        </div>
+        <div class="dash-strip__item tilt">
+            <div class="i">✅</div>
+            <div class="t">Apply and manage</div>
+            <p>Students apply to join, admins approve and manage membership.</p>
+        </div>
+    </section>
+
+    <!-- ROLE-REQUIRED MODAL (shown when logged-in user lacks role) -->
+    <div class="dash-modal" id="roleModal" hidden>
+        <div class="dash-modal__card">
+            <div class="dash-modal__icon">🔒</div>
+            <h3 class="m-0">Role required</h3>
+            <p class="muted" id="roleText">This action requires additional permissions.</p>
+            <div class="dash-modal__actions">
+                <a class="btn subtle" href="#" id="modalCancel">Cancel</a>
+                <a class="btn ghost" th:href="@{/explore/clubs}">Explore clubs</a>
+                <a class="btn" id="modalSwitch">Switch account</a>
+            </div>
+        </div>
+        <div class="dash-modal__scrim"></div>
+    </div>
+</main>
+
+<!-- Page-scoped CSS (move to site.css later) -->
+<style>
+    .dash { overflow: hidden; }
+
+    /* HERO */
+    .dash-hero {
+      position: relative; margin: 18px auto 10px;
+      width: min(96vw, 1600px);
+      height: 320px; border-radius: 18px; overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .dash-hero__bg { position: absolute; inset: 0; background: linear-gradient(135deg, #3b82f6, #06b6d4, #10b981); filter: saturate(1.1); }
+    .blob { position: absolute; width: 480px; height: 480px; border-radius: 50%; opacity: .24; mix-blend-mode: screen; }
+    .blob.b1 { background: #60a5fa; top: -120px; left: -80px; animation: float1 18s ease-in-out infinite; }
+    .blob.b2 { background: #22d3ee; top: -140px; right: -100px; animation: float2 22s ease-in-out infinite; }
+    .blob.b3 { background: #34d399; bottom: -160px; left: 40%; animation: float3 26s ease-in-out infinite; }
+    @keyframes float1 { 0%,100% { transform: translate(0,0) } 50% { transform: translate(40px, -20px) } }
+    @keyframes float2 { 0%,100% { transform: translate(0,0) } 50% { transform: translate(-30px, 30px) } }
+    @keyframes float3 { 0%,100% { transform: translate(0,0) } 50% { transform: translate(20px, -30px) } }
+
+    .dash-hero__content {
+      position: relative; z-index: 1; color: #fff;
+      display: grid; place-content: center; height: 100%;
+      text-align: center; padding: 0 18px;
+      text-shadow: 0 6px 24px rgba(0,0,0,.25);
+    }
+    .dash-title { font-size: clamp(28px, 4.6vw, 56px); line-height: 1.05; margin: 0; font-weight: 900; letter-spacing: .2px; }
+    .dash-subtitle { margin-top: 8px; font-size: clamp(14px, 1.4vw, 18px); opacity: .95; }
+    .dash-hero__cta { margin-top: 16px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+
+    /* GRID */
+    .dash-grid {
+      width: min(96vw, 1600px); margin: 8px auto;
+      display: grid; gap: 14px;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+    .dash-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 16px;
+      box-shadow: var(--shadow);
+      display: flex; flex-direction: column; gap: 8px;
+      transform: translateY(0); transition: transform .12s ease, box-shadow .12s ease;
+    }
+    .dash-card:hover { transform: translateY(-2px); box-shadow: 0 16px 40px rgba(0,0,0,.08); }
+    .dash-card__icon { font-size: 28px; }
+    .dash-card__title { margin: 0; font-size: 18px; font-weight: 800; }
+    .dash-card__text { margin: 0; color: var(--muted); }
+    .dash-card__actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+
+    /* STRIP */
+    .dash-strip {
+      width: min(96vw, 1600px); margin: 12px auto 28px;
+      display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+    .dash-strip__item {
+      background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px;
+      box-shadow: var(--shadow); transition: transform .12s ease, box-shadow .12s ease;
+    }
+    .dash-strip__item:hover { transform: translateY(-2px); box-shadow: 0 16px 40px rgba(0,0,0,.08); }
+    .dash-strip__item .i { font-size: 22px; }
+    .dash-strip__item .t { font-weight: 800; margin-top: 4px; }
+    .dash-strip__item p { margin: 6px 0 0; color: var(--muted); }
+
+    /* REVEAL */
+    .reveal { opacity: 0; transform: translateY(10px); transition: opacity .5s ease, transform .5s ease; }
+    .reveal.in { opacity: 1; transform: translateY(0); }
+
+    /* MODAL */
+    .dash-modal { position: fixed; inset: 0; display: grid; place-items: center; z-index: 999; }
+    .dash-modal[hidden] { display: none; }
+    .dash-modal__scrim { position: absolute; inset: 0; background: rgba(0,0,0,.4); }
+    .dash-modal__card {
+      position: relative; z-index: 1; width: 92vw; max-width: 420px;
+      background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px;
+      box-shadow: 0 28px 60px rgba(0,0,0,.2);
+      text-align: center;
+    }
+    .dash-modal__icon { font-size: 34px; margin-bottom: 6px; }
+    .dash-modal__actions { margin-top: 10px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+
+    /* DISABLED (still clickable for gate) */
+    .btn.disabled { opacity: .6; pointer-events: auto; }
+</style>
+
+<!-- Roles into JS -->
+<script>
+    window.DASH = { roles: [] };
+</script>
+<script sec:authorize="hasRole('STUDENT')">window.DASH.roles.push('STUDENT');</script>
+<script sec:authorize="hasRole('CLUB_ADMIN')">window.DASH.roles.push('CLUB_ADMIN');</script>
+<script sec:authorize="hasRole('UNIVERSITY_ADMIN')">window.DASH.roles.push('UNIVERSITY_ADMIN');</script>
+
+<!-- Page-scoped JS (move to site.js later) -->
+<script>
+    (function() {
+      // Guard unauthorized links:
+      // - If NOT logged in -> send to /login (clean)
+      // - If logged in but lacks role -> show modal (no whitelabel, no confusing redirect)
+      const roles = window.DASH.roles || [];
+      const isLoggedIn = roles.length > 0;
+
+      document.addEventListener('click', function(e) {
+        const target = e.target.closest('a,button');
+        if (!target) return;
+
+        const required = target.getAttribute('data-requires-role');
+        if (!required) return;
+
+        const hasRole = roles.includes(required);
+        if (hasRole) return; // allow navigation
+
+        e.preventDefault();
+
+        if (!isLoggedIn) {
+          const req = encodeURIComponent(required);
+          const from = encodeURIComponent(window.location.pathname);
+          window.location.href = `/login?required=${req}&from=${from}`;
+          return;
+        }
+
+        // Logged in but wrong role: show modal
+        showRoleModal(required);
+      }, { capture: true });
+
+      // Reveal on scroll
+      const reveals = document.querySelectorAll('.reveal, .dash-card, .dash-strip__item');
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('in'); });
+      }, { threshold: .12 });
+      reveals.forEach(el => io.observe(el));
+
+      // Tilt on hover
+      const tilts = document.querySelectorAll('.tilt');
+      tilts.forEach(el => {
+        let rAF;
+        const onMove = (e) => {
+          const r = el.getBoundingClientRect();
+          const dx = (e.clientX - (r.left + r.width/2)) / r.width;
+          const dy = (e.clientY - (r.top + r.height/2)) / r.height;
+          cancelAnimationFrame(rAF);
+          rAF = requestAnimationFrame(() => {
+            el.style.transform = `rotateX(${(-dy * 4).toFixed(2)}deg) rotateY(${(dx * 4).toFixed(2)}deg) translateY(-2px)`;
+            el.style.boxShadow = '0 16px 40px rgba(0,0,0,.08)';
+          });
+        };
+        const reset = () => { cancelAnimationFrame(rAF); el.style.transform = 'rotateX(0) rotateY(0) translateY(0)'; el.style.boxShadow = ''; };
+        el.addEventListener('mousemove', onMove);
+        el.addEventListener('mouseleave', reset);
+      });
+
+      // Modal helpers
+      function showRoleModal(requiredRole) {
+        const modal = document.getElementById('roleModal');
+        const text = document.getElementById('roleText');
+        const cancel = document.getElementById('modalCancel');
+        const switchBtn = document.getElementById('modalSwitch');
+
+        text.textContent = `This action requires ${prettyRole(requiredRole)} permissions.`;
+        switchBtn.onclick = () => { window.location.href = '/logout'; };
+        cancel.onclick = (e) => { e.preventDefault(); modal.hidden = true; };
+
+        modal.hidden = false;
+      }
+      function prettyRole(r) {
+        if (r === 'STUDENT') return 'Student';
+        if (r === 'CLUB_ADMIN') return 'Club Admin';
+        if (r === 'UNIVERSITY_ADMIN') return 'University Admin';
+        return r;
+      }
+    })();
+</script>
+</main>
 </body>
 </html>

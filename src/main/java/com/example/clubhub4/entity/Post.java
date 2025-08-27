@@ -36,6 +36,9 @@ public class Post {
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
 
+    @Column(name = "image_url", length = 255)
+    private String imageUrl;
+
     @PrePersist
     public void prePersist() {
         if (createdAt == null) createdAt = OffsetDateTime.now();

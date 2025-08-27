@@ -34,7 +34,7 @@ public class MemberPostingService {
     }
 
     @Transactional
-    public UUID createPostAsMember(UUID userId, UUID clubId, String content) {
+    public UUID createPostAsMember(UUID userId, UUID clubId, String content, String imageUrl){
         if (userId == null) throw new AccessDeniedException("Login required");
         if (content == null || content.trim().isEmpty()) {
             throw new IllegalArgumentException("Post content cannot be empty");
@@ -51,6 +51,7 @@ public class MemberPostingService {
         p.setAuthor(author);
         p.setClub(clubRef);
         p.setContent(content.trim());
+        p.setImageUrl(imageUrl);
 //        p.setCreatedAt(OffsetDateTime.now());
 //        p.setUpdatedAt(OffsetDateTime.now());
 

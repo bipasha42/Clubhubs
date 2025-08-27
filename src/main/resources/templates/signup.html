@@ -1,43 +1,65 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title>Sign up</title></head>
+<head th:replace="fragments/common :: head('Sign up')"></head>
 <body>
-<h2>Create your account</h2>
+<header th:replace="fragments/common :: nav"></header>
 
-<div th:if="${error}">
-    <p style="color:red;" th:text="${error}">Error</p>
-</div>
+<main class="auth-page">
+    <section class="auth-card">
+        <div class="auth-brand">
+            <div class="auth-logo">ClubHub</div>
+            <div class="auth-tagline">Create your account</div>
+        </div>
 
-<form th:action="@{/signup}" th:object="${form}" method="post">
-    <label>Email</label>
-    <input th:field="*{email}" type="email" required>
-    <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}" style="color:red;"></div>
-    <br/>
+        <div th:if="${error}" class="auth-alert err" th:text="${error}">Error</div>
 
-    <label>First name</label>
-    <input th:field="*{firstName}" required>
-    <div th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}" style="color:red;"></div>
-    <br/>
+        <form class="auth-form" th:action="@{/signup}" th:object="${form}" method="post" autocomplete="on">
+            <div class="auth-field">
+                <input class="auth-input" th:field="*{email}" type="email" placeholder="Email" required>
+                <div class="auth-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+            </div>
 
-    <label>Last name</label>
-    <input th:field="*{lastName}" required>
-    <div th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}" style="color:red;"></div>
-    <br/>
+            <div class="auth-field">
+                <select class="auth-input" th:field="*{universityId}" required>
+                    <option value="" disabled th:selected="${form.universityId == null}">Select your university</option>
+                    <option th:each="u : ${universities}" th:value="${u.id}" th:text="${u.name}"
+                            th:selected="${form.universityId != null and form.universityId == u.id}">University</option>
+                </select>
+                <div class="auth-error" th:if="${#fields.hasErrors('universityId')}" th:errors="*{universityId}"></div>
+            </div>
 
-    <label>Password</label>
-    <input th:field="*{password}" type="password" required>
-    <div th:if="${#fields.hasErrors('password')}" th:errors="*{password}" style="color:red;"></div>
-    <br/>
+            <div class="auth-row">
+                <div class="auth-field">
+                    <input class="auth-input" th:field="*{firstName}" type="text" placeholder="First name" required>
+                    <div class="auth-error" th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}"></div>
+                </div>
+                <div class="auth-field">
+                    <input class="auth-input" th:field="*{lastName}" type="text" placeholder="Last name" required>
+                    <div class="auth-error" th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}"></div>
+                </div>
+            </div>
 
-    <label>Confirm password</label>
-    <input th:field="*{confirmPassword}" type="password" required>
-    <div th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}" style="color:red;"></div>
-    <br/>
+            <div class="auth-row">
+                <div class="auth-field">
+                    <input class="auth-input" th:field="*{password}" type="password" placeholder="Password" required>
+                    <div class="auth-error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+                </div>
+                <div class="auth-field">
+                    <input class="auth-input" th:field="*{confirmPassword}" type="password" placeholder="Confirm password" required>
+                    <div class="auth-error" th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}"></div>
+                </div>
+            </div>
 
-    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-    <button type="submit">Sign up</button>
-</form>
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
-<p>Already have an account? <a th:href="@{/login}">Log in</a></p>
+            <button class="btn auth-submit" type="submit">Sign up</button>
+
+            <div class="auth-secondary">
+                <span>Already have an account?</span>
+                <a th:href="@{/login}">Log in</a>
+            </div>
+        </form>
+    </section>
+</main>
 </body>
 </html>

@@ -1,4 +1,4 @@
-package com.example.clubhub4.web;
+package com.example.clubhub4.controller;
 
 import com.example.clubhub4.dto.FeedCardView;
 import com.example.clubhub4.service.StudentFeedService;

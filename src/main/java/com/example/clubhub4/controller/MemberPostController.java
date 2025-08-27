@@ -1,5 +1,6 @@
 package com.example.clubhub4.controller;
 
+import com.example.clubhub4.service.ImageStorageService;
 import com.example.clubhub4.service.MemberPostingService;
 import com.example.clubhub4.dto.MyClubOption;
 import com.example.clubhub4.repository.ClubMemberRepository;
@@ -10,6 +11,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -23,8 +25,8 @@ public class MemberPostController {
 
     private final ClubMemberRepository clubMemberRepository;
     private final MemberPostingService memberPostingService;
+    private final ImageStorageService imageStorageService;
 
-    // Show "create post" page with user's clubs
     @GetMapping("/new")
     public String newPost(@AuthenticationPrincipal AppUserPrincipal principal,
                           @RequestParam(value = "clubId", required = false) UUID preselectClubId,
@@ -35,17 +37,21 @@ public class MemberPostController {
         return "student/post-new";
     }
 
-    // Handle submit
     @PostMapping
     public String create(@AuthenticationPrincipal AppUserPrincipal principal,
                          @RequestParam("clubId") UUID clubId,
-                         @RequestParam("content") String content) {
+                         @RequestParam(value="content", required=false) String content,
+                         @RequestParam(value="image", required=false) MultipartFile image) {
         try {
-            UUID postId = memberPostingService.createPostAsMember(principal.getId(), clubId, content);
+            String imageUrl = null;
+            if (image != null && !image.isEmpty()) {
+                imageUrl = imageStorageService.saveImage(image);
+            }
+            UUID postId = memberPostingService.createPostAsMember(principal.getId(), clubId, content, imageUrl);
             return "redirect:/clubs/" + clubId + "/posts/" + postId;
         } catch (AccessDeniedException ex) {
             String msg = URLEncoder.encode("You must be a member of the selected club to post.", StandardCharsets.UTF_8);
-            return "redirect:/me/posts/new?error=" + msg;
+            return "redirect:/me/posts/new?error=" + msg + "&clubId=" + clubId;
         } catch (IllegalArgumentException ex) {
             String msg = URLEncoder.encode(ex.getMessage(), StandardCharsets.UTF_8);
             return "redirect:/me/posts/new?error=" + msg + "&clubId=" + clubId;

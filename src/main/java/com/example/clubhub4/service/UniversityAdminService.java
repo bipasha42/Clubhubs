@@ -1,4 +1,5 @@
 package com.example.clubhub4.service;
+import com.example.clubhub4.dto.ClubDisplay;
 import com.example.clubhub4.dto.CreateClubWithAdminForm;
 import com.example.clubhub4.dto.UpdateClubAdminForm;
 import com.example.clubhub4.dto.ClubListItem;
@@ -74,14 +75,46 @@ public class UniversityAdminService {
         return club.getId();
     }
 
+    public UpdateClubAdminForm getAdminForm(UUID universityAdminUserId, UUID clubId) {
+        User uniAdmin = userRepository.findById(universityAdminUserId)
+                .orElseThrow(() -> new IllegalArgumentException("Admin account not found"));
+
+        Club club = clubRepository.findByIdWithAdmin(clubId)
+                .orElseThrow(() -> new IllegalArgumentException("Club not found"));
+
+        if (!club.getUniversityId().equals(uniAdmin.getUniversityId())) {
+            throw new IllegalArgumentException("This club is not in your university");
+        }
+
+        UpdateClubAdminForm form = new UpdateClubAdminForm();
+        form.setAdminEmail(club.getAdmin().getEmail());
+        form.setAdminFirstName(club.getAdmin().getFirstName());
+        form.setAdminLastName(club.getAdmin().getLastName());
+        // Do NOT prefill passwords; UI should show them blank
+        return form;
+    }
+
+    // Simple display for banner/title
+    public ClubDisplay getClubDisplay(UUID universityAdminUserId, UUID clubId) {
+        User uniAdmin = userRepository.findById(universityAdminUserId)
+                .orElseThrow(() -> new IllegalArgumentException("Admin account not found"));
+
+        Club club = clubRepository.findById(clubId)
+                .orElseThrow(() -> new IllegalArgumentException("Club not found"));
+
+        if (!club.getUniversityId().equals(uniAdmin.getUniversityId())) {
+            throw new IllegalArgumentException("This club is not in your university");
+        }
+
+        return new ClubDisplay(club.getId(), club.getName());
+    }
+
     public Page<ClubListItem> listClubsForAdmin(UUID universityAdminUserId, int page, int size) {
         User uniAdmin = userRepository.findById(universityAdminUserId)
                 .orElseThrow(() -> new IllegalArgumentException("Admin account not found"));
 
         UUID universityId = uniAdmin.getUniversityId();
-        if (universityId == null) {
-            throw new IllegalStateException("Your account is not linked to a university");
-        }
+        if (universityId == null) throw new IllegalStateException("Your account is not linked to a university");
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
         return clubRepository.findListByUniversityId(universityId, pageable);

@@ -1,48 +1,85 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8"/>
-    <title>Create a post</title>
-    <style>
-        body { font-family: system-ui, sans-serif; margin: 24px; }
-        textarea { width: 100%; max-width: 800px; height: 180px; }
-        .err { color: #b00020; }
-    </style>
-</head>
+<head th:replace="fragments/common :: head('Create a post')"></head>
 <body>
-<h2>Create a post</h2>
+<header th:replace="fragments/common :: nav"></header>
 
-<div th:if="${param.error}">
-    <p class="err" th:text="${param.error}">Error</p>
-</div>
+<main class="container">
+    <!-- Banner -->
+    <section class="cover">
+        <div class="cover__title">Create Post</div>
+    </section>
 
-<div th:if="${#lists.isEmpty(clubs)}">
-    <p>You aren’t a member of any clubs yet.</p>
-    <p><a th:href="@{/explore/clubs}">Explore clubs</a> and join one to start posting.</p>
-</div>
+    <!-- Bar -->
+<!--    <section class="community-bar card">-->
+<!--        <div class="bar-left">-->
+<!--            <div class="avatar lg">✍️</div>-->
+<!--            <div class="name">Create a post</div>-->
+<!--        </div>-->
+<!--        <div class="bar-right">-->
+<!--            <a class="btn ghost" th:href="@{/student/feed}">Back to feed</a>-->
+<!--        </div>-->
+<!--    </section>-->
 
-<div th:if="${!#lists.isEmpty(clubs)}">
-    <form th:action="@{/me/posts}" method="post">
-        <label>Club</label>
-        <select name="clubId" required>
-            <option value="" th:if="${#lists.size(clubs) > 1}" disabled th:selected="${preselectClubId == null}">Select a club</option>
-            <option th:each="c : ${clubs}" th:value="${c.id}"
-                    th:text="${c.name + ' — ' + c.universityName}"
-                    th:selected="${preselectClubId != null and preselectClubId == c.id}">
-                Club
-            </option>
-        </select>
+    <article class="card editor mt-2">
+        <div th:if="${param.error}" class="toast err mt-1" th:text="${param.error}">Error</div>
 
-        <label style="display:block; margin-top:10px;">Content</label>
-        <textarea name="content" placeholder="Share something with your club..." required></textarea>
-
-        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-
-        <div style="margin-top:10px;">
-            <button type="submit">Post</button>
-            <a th:href="@{/student/feed}" style="margin-left:8px;">Cancel</a>
+        <div th:if="${#lists.isEmpty(clubs)}" class="mt-1">
+            <p>You aren’t a member of any clubs yet. <a th:href="@{/student/university/clubs}">Find clubs</a></p>
         </div>
-    </form>
-</div>
+
+        <form th:if="${!#lists.isEmpty(clubs)}"
+              th:action="@{/me/posts}" method="post" enctype="multipart/form-data">
+
+            <label>Club</label>
+            <select name="clubId" required>
+                <option value="" th:if="${#lists.size(clubs) > 1}" disabled th:selected="${preselectClubId == null}">Select a club</option>
+                <option th:each="c : ${clubs}" th:value="${c.id}"
+                        th:text="${c.name + ' — ' + c.universityName}"
+                        th:selected="${preselectClubId != null and preselectClubId == c.id}">Club</option>
+            </select>
+
+            <div class="editor-head mt-1">
+                <h3 class="m-0">Post content</h3>
+                <div id="charCounter" class="counter">0 / 10000</div>
+            </div>
+
+            <textarea name="content" placeholder="Share something with your club…"></textarea>
+
+            <div class="h-stack mt-1">
+                <label class="file">
+                    <input type="file" name="image" accept="image/*">
+                    <span>Attach image</span>
+                </label>
+                <div class="help">Optional image (max 5MB).</div>
+            </div>
+
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+            <div class="editor-actions">
+                <button class="btn" type="submit">Post</button>
+                <a class="btn subtle" th:href="@{/student/feed}">Cancel</a>
+            </div>
+        </form>
+    </article>
+</main>
+
+<!-- Live character counter -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const ta = document.querySelector('textarea[name="content"]');
+      const counter = document.getElementById('charCounter');
+      const max = 10000;
+      if (ta && counter) {
+        const update = () => {
+          const n = ta.value.length;
+          counter.textContent = n + ' / ' + max;
+          counter.classList.toggle('warn', n > max - 200);
+        };
+        ta.addEventListener('input', update);
+        update();
+      }
+    });
+</script>
 </body>
 </html>

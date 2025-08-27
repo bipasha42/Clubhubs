@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:fragment="head(title)">
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title th:text="${title} ?: 'ClubHub'">ClubHub</title>
+
+    <!-- CSRF for JS (optional, used by site.js if you fetch APIs) -->
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+
+    <!-- Theme color for mobile address bar -->
+    <meta name="theme-color" content="#2563eb"/>
+
+    <!-- Global styles & scripts -->
+    <link rel="stylesheet" th:href="@{/css/site.css?v=5}"/>
+    <script defer th:src="@{/js/site.js?v=5}"></script>
+</head>
+
+<body>
+<header th:fragment="nav">
+    <nav class="nav">
+        <a class="brand" th:href="@{/}">ClubHub</a>
+
+        <div class="nav-links">
+            <a th:href="@{/}">Dashboard</a>
+            <a th:href="@{/explore/clubs}">Explore</a>
+
+            <!-- Student -->
+            <a sec:authorize="hasRole('STUDENT')" th:href="@{/student/feed}">My Feed</a>
+            <a sec:authorize="hasRole('STUDENT')" th:href="@{/student/university/clubs}">My University</a>
+            <a sec:authorize="hasRole('STUDENT')" th:href="@{/student/notifications}">
+                Notifications <span id="notifCount" class="badge danger" hidden>0</span>
+            </a>
+            <a sec:authorize="hasRole('STUDENT')" th:href="@{/me/posts/new}">New Post</a>
+
+            <!-- Club admin -->
+            <a sec:authorize="hasRole('CLUB_ADMIN')" th:href="@{/club/feed}">Admin</a>
+
+            <!-- University admin -->
+            <a sec:authorize="hasRole('UNIVERSITY_ADMIN')" th:href="@{/university/clubs}">University Admin</a>
+        </div>
+
+        <div class="nav-actions">
+            <!-- Theme toggle -->
+            <button class="btn subtle" id="themeToggle" title="Toggle theme" aria-label="Toggle theme">🌓</button>
+
+            <!-- Auth -->
+            <div sec:authorize="isAnonymous()">
+                <a class="btn subtle" th:href="@{/login}">Login</a>
+                <a class="btn" th:href="@{/signup}">Sign up</a>
+            </div>
+
+            <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" class="inline">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button class="btn subtle" type="submit">Logout</button>
+            </form>
+        </div>
+    </nav>
+
+    <!-- Toast container (used by site.js) -->
+    <div id="toastHost" class="toast-host"></div>
+</header>
+</body>
+</html>

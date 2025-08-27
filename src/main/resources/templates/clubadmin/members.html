@@ -1,57 +1,102 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8"/>
-    <title th:text="${club.name} + ' — Members'">Members</title>
-    <style>
-        body { font-family: system-ui, sans-serif; margin: 24px; }
-        table { border-collapse: collapse; width: 100%; }
-        th, td { border: 1px solid #ddd; padding: 8px; }
-        th { background: #f5f5f5; text-align: left; }
-        nav a { margin: 0 6px; }
-    </style>
-</head>
+<head th:replace="fragments/common :: head(${club.name} + ' — Members')"></head>
 <body>
-<h2 th:text="${club.name} + ' — Members'">Members</h2>
-<p>
-    <a th:href="@{/club/feed}">← Back to feed</a>
-</p>
+<header th:replace="fragments/common :: nav"></header>
 
-<div th:if="${param.removed}">
-    <p style="color:green;">Member removed.</p>
-</div>
-<div th:if="${param.error}">
-    <p style="color:#b00020;" th:text="${param.error}">Error</p>
-</div>
+<main class="container">
+    <!-- Banner -->
+    <section class="cover">
+        <div class="cover__title" th:text="${club.name}">Club Name</div>
+    </section>
 
-<table>
-    <thead>
-    <tr>
-        <th>Name</th>
-        <th>Email</th>
-        <th>Member since</th>
-        <th>Action</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="m : ${members.content}">
-        <td th:text="${m.fullName}">Name</td>
-        <td th:text="${m.email}">email@example.com</td>
-        <td th:text="${#temporals.format(m.memberSince, 'yyyy-MM-dd HH:mm')}">time</td>
-        <td>
-            <form th:action="@{'/club/members/' + ${m.userId} + '/remove'}" method="post" style="margin:0;">
-                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                <button type="submit" onclick="return confirm('Remove this member?');">Remove</button>
-            </form>
-        </td>
-    </tr>
-    </tbody>
-</table>
+    <!-- Community bar -->
+    <section class="community-bar card">
+        <div class="bar-left">
+<!--            <div class="avatar lg">-->
+<!--                <span th:text="${#strings.substring(#strings.trim(club.name), 0, 2)}">CL</span>-->
+<!--            </div>-->
+<!--            <div class="name">-->
+<!--                <span th:text="${club.name}">Club Name</span>-->
+<!--            </div>-->
+        </div>
+        <div class="bar-right">
+            <a class="btn ghost" th:href="@{'/clubs/' + ${club.id}}">View public</a>
+            <a class="btn" th:href="@{/club/posts/new}">+ New post</a>
+        </div>
+    </section>
 
-<nav th:if="${members.totalPages > 1}" style="margin-top: 14px;">
-    <a th:if="${!members.first}" th:href="@{/club/members(page=${page-1}, size=${size})}">Prev</a>
-    <span>Page <span th:text="${members.number + 1}"></span> of <span th:text="${members.totalPages}"></span></span>
-    <a th:if="${!members.last}" th:href="@{/club/members(page=${page+1}, size=${size})}">Next</a>
-</nav>
+    <section class="layout-2col">
+        <!-- MAIN -->
+        <section>
+            <div class="mt-1">
+                <div th:if="${param.removed}" class="toast ok">Member removed.</div>
+                <div th:if="${param.error}" class="toast err" th:text="${param.error}">Error</div>
+            </div>
+
+            <h3 class="m-0 mt-2">Members</h3>
+
+            <div th:if="${members.empty}" class="mt-1">
+                <p class="help">No members yet.</p>
+            </div>
+
+            <div class="v-stack mt-1" th:if="${!members.empty}">
+                <article class="card" th:each="m : ${members.content}">
+                    <div class="h-stack" style="justify-content: space-between;">
+                        <div class="v-stack" style="gap:4px;">
+                            <strong th:text="${m.fullName}">Name</strong>
+                            <span class="muted" th:text="${m.email}">email@example.com</span>
+                            <div class="post-meta">
+                                <span>Member since</span>
+                                <span class="dot">•</span>
+                                <span th:text="${#temporals.format(m.memberSince, 'yyyy-MM-dd HH:mm')}">time</span>
+                            </div>
+                        </div>
+                        <div>
+                            <form th:action="@{'/club/members/' + ${m.userId} + '/remove'}" method="post" class="inline" data-confirm="Remove this member?">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                <button class="btn subtle danger" type="submit">Remove</button>
+                            </form>
+                        </div>
+                    </div>
+                </article>
+            </div>
+
+            <!-- Pagination -->
+            <div class="h-stack center mt-3" th:if="${members.totalPages > 1}">
+                <a class="btn subtle" th:if="${!members.first}" th:href="@{/club/members(page=${page-1}, size=${size})}">Prev</a>
+                <span>Page <strong th:text="${members.number + 1}"></strong> / <span th:text="${members.totalPages}"></span></span>
+                <a class="btn subtle" th:if="${!members.last}" th:href="@{/club/members(page=${page+1}, size=${size})}">Next</a>
+            </div>
+        </section>
+
+        <!-- SIDEBAR -->
+        <aside class="card sidebar">
+            <h4 class="m-0">Manage</h4>
+            <nav class="sidebar-links mt-1">
+                <a class="side-link" th:href="@{/club/feed}">Feed</a>
+                <a class="side-link primary" th:href="@{/club/members}">Members</a>
+                <a class="side-link" th:href="@{/club/applications}">Applications</a>
+                <a class="side-link" th:href="@{/club/posts/new}">+ New post</a>
+            </nav>
+
+            <hr style="border:0;border-top:1px solid var(--border); margin:12px 0;">
+
+            <h4 class="m-0">Stats</h4>
+            <div class="meta mt-1">
+                <div><strong>University</strong></div>
+                <div th:text="${club.universityName}">University</div>
+            </div>
+            <div class="meta mt-1">
+                <div><strong>Members</strong></div>
+                <div th:text="${club.memberCount}">0</div>
+            </div>
+            <div class="meta mt-1">
+                <div><strong>Followers</strong></div>
+                <div th:text="${club.followerCount}">0</div>
+            </div>
+        </aside>
+    </section>
+</main>
 </body>
 </html>

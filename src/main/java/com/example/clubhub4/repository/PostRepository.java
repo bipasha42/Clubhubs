@@ -43,6 +43,7 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
         select new com.example.clubhub4.dto.PostCardView(
           p.id,
           p.content,
+          p.imageUrl,
           p.createdAt,
           (select count(l.id) from PostLike l where l.post = p),
           (select count(c.id) from PostComment c where c.post = p)
@@ -71,6 +72,7 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
       c.name,
       concat(a.firstName, ' ', a.lastName),
       p.content,
+      p.imageUrl,
       p.createdAt,
       (select count(l.id) from PostLike l where l.post = p),
       (select count(pc.id) from PostComment pc where pc.post = p)

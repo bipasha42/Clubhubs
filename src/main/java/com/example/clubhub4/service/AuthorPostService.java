@@ -26,11 +26,26 @@ public class AuthorPostService {
 
     @Transactional
     public void updatePostAsAuthor(UUID userId, UUID clubId, UUID postId, String content) {
-        if (content == null || content.trim().isEmpty()) {
-            throw new IllegalArgumentException("Post content cannot be empty");
-        }
         Post p = requireAuthorOwnedPost(userId, clubId, postId);
-        p.setContent(content.trim());
+        if (content != null) p.setContent(content.trim());
+        p.setUpdatedAt(OffsetDateTime.now());
+        postRepository.save(p);
+    }
+
+    // New: update with optional new image or removal
+    @Transactional
+    public void updatePostAsAuthor(UUID userId, UUID clubId, UUID postId,
+                                   String content, String newImageUrl, boolean removeImage) {
+        Post p = requireAuthorOwnedPost(userId, clubId, postId);
+
+        if (content != null) p.setContent(content.trim());
+
+        if (removeImage) {
+            p.setImageUrl(null);
+        } else if (newImageUrl != null && !newImageUrl.isBlank()) {
+            p.setImageUrl(newImageUrl);
+        }
+
         p.setUpdatedAt(OffsetDateTime.now());
         postRepository.save(p);
     }
@@ -43,10 +58,8 @@ public class AuthorPostService {
 
     @Transactional
     public void deleteCommentAsPostAuthor(UUID userId, UUID postId, UUID commentId) {
-        PostComment c = postCommentRepository.findByIdAndPost_Author_Id(commentId, userId)
+        var c = postCommentRepository.findByIdAndPost_Author_Id(commentId, userId)
                 .orElseThrow(() -> new AccessDeniedException("You can only delete comments on your own post"));
-
-        // Optional safety: ensure comment belongs to the given postId
         if (!c.getPost().getId().equals(postId)) {
             throw new AccessDeniedException("Comment does not belong to this post");
         }

@@ -1,13 +1,19 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title>Logout</title></head>
+<head th:replace="fragments/common :: head('Logout')"></head>
 <body>
-<h2>Logout</h2>
-<p>Are you sure you want to log out?</p>
-<form th:action="@{/logout}" method="post">
-    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-    <button type="submit">Log out</button>
-</form>
-<p><a th:href="@{/}">Cancel</a></p>
+<header th:replace="fragments/common :: nav"></header>
+
+<main class="container center" style="min-height:60vh; text-align:center;">
+    <div class="card" style="max-width:520px;">
+        <h2 class="m-0">Logout</h2>
+        <p class="mt-1">Are you sure you want to log out?</p>
+        <form th:action="@{/logout}" method="post" class="mt-2 h-stack center" data-confirm="Log out now?">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button class="btn" type="submit">Log out</button>
+            <a class="btn subtle" th:href="@{/}" style="margin-left:8px;">Cancel</a>
+        </form>
+    </div>
+</main>
 </body>
 </html>

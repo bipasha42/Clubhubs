@@ -1,11 +1,8 @@
 package com.example.clubhub4.controller;
 
-import com.example.clubhub4.service.ApplicationService;
-import com.example.clubhub4.service.AuthorPostService;
-import com.example.clubhub4.service.ExploreService;
+import com.example.clubhub4.service.*;
 import com.example.clubhub4.dto.*;
 import com.example.clubhub4.security.AppUserPrincipal;
-import com.example.clubhub4.service.MemberPostingService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -14,6 +11,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -30,6 +28,8 @@ public class PublicClubController {
     private final MemberPostingService memberPostingService;
     private final AuthorPostService authorPostService;
     private final ApplicationService applicationService;
+    private final ImageStorageService imageStorageService;
+
 
 
 
@@ -46,9 +46,14 @@ public class PublicClubController {
 
         boolean canApply = principal != null && applicationService.canApply(principal.getId(), clubId);
         var appStatus = (principal != null) ? applicationService.applicationStatus(principal.getId(), clubId) : java.util.Optional.empty();
+        boolean canReapply = principal != null && applicationService.canReapply(principal.getId(), clubId);
+        boolean canCancel = principal != null && applicationService.canCancel(principal.getId(), clubId);
 
         model.addAttribute("canApplyToClub", canApply);
         model.addAttribute("applicationStatus", appStatus.orElse(null));
+        model.addAttribute("canReapply", canReapply);
+        model.addAttribute("canCancel", canCancel);
+
 
         String back = request.getRequestURI();
         if (request.getQueryString() != null) back += "?" + request.getQueryString();
@@ -123,18 +128,15 @@ public class PublicClubController {
     // Create post (member-only)
     @PostMapping("/clubs/{clubId}/posts")
     public String createMemberPost(@PathVariable UUID clubId,
-                                   @RequestParam("content") String content,
+                                   @RequestParam(value = "content", required = false) String content,
+                                   @RequestParam(value = "image", required = false) org.springframework.web.multipart.MultipartFile image,
                                    @AuthenticationPrincipal AppUserPrincipal principal) {
-        try {
-            UUID postId = memberPostingService.createPostAsMember(principal.getId(), clubId, content);
-            return "redirect:/clubs/" + clubId + "/posts/" + postId;
-        } catch (AccessDeniedException ex) {
-            String msg = URLEncoder.encode("You must be a club member to post.", StandardCharsets.UTF_8);
-            return "redirect:/clubs/" + clubId + "?error=" + msg;
-        } catch (IllegalArgumentException ex) {
-            String msg = URLEncoder.encode(ex.getMessage(), StandardCharsets.UTF_8);
-            return "redirect:/clubs/" + clubId + "?error=" + msg;
+        String imageUrl = null;
+        if (image != null && !image.isEmpty()) {
+            imageUrl = imageStorageService.saveImage(image);
         }
+        UUID postId = memberPostingService.createPostAsMember(principal.getId(), clubId, content, imageUrl);
+        return "redirect:/clubs/" + clubId + "/posts/" + postId;
     }
 
     // Post details (add isAuthor + isClubAdmin)
@@ -169,23 +171,31 @@ public class PublicClubController {
                            @PathVariable UUID postId,
                            @AuthenticationPrincipal AppUserPrincipal principal,
                            Model model) {
-        // Will throw if not author or wrong club
-        var p = authorPostService.requireAuthorOwnedPost(principal.getId(), clubId, postId);
+        var post = authorPostService.requireAuthorOwnedPost(principal.getId(), clubId, postId);
         model.addAttribute("postId", postId);
         model.addAttribute("clubId", clubId);
-        model.addAttribute("content", p.getContent());
+        model.addAttribute("content", post.getContent());
+        model.addAttribute("currentImageUrl", post.getImageUrl()); // show current image
         return "club/post-edit";
     }
 
-    // Save edit (author only)
     @PostMapping("/clubs/{clubId}/posts/{postId}")
     public String saveEdit(@PathVariable UUID clubId,
                            @PathVariable UUID postId,
                            @RequestParam("content") String content,
+                           @RequestParam(value = "image", required = false) MultipartFile image,
+                           @RequestParam(value = "removeImage", defaultValue = "false") boolean removeImage,
                            @AuthenticationPrincipal AppUserPrincipal principal) {
-        authorPostService.updatePostAsAuthor(principal.getId(), clubId, postId, content);
+
+        String newUrl = null;
+        if (image != null && !image.isEmpty()) {
+            newUrl = imageStorageService.saveImage(image);
+        }
+
+        authorPostService.updatePostAsAuthor(principal.getId(), clubId, postId, content, newUrl, removeImage);
         return "redirect:/clubs/" + clubId + "/posts/" + postId + "?updated";
     }
+
 
     // Delete post (author only)
     @PostMapping("/clubs/{clubId}/posts/{postId}/delete")
@@ -213,5 +223,19 @@ public class PublicClubController {
                         @AuthenticationPrincipal com.example.clubhub4.security.AppUserPrincipal principal) {
         applicationService.apply(principal.getId(), clubId, text);
         return "redirect:/clubs/" + clubId + "?applied";
+    }
+    @PostMapping("/clubs/{clubId}/apply/cancel")
+    public String cancelApplication(@PathVariable UUID clubId,
+                                    @AuthenticationPrincipal com.example.clubhub4.security.AppUserPrincipal principal) {
+        applicationService.cancelPending(principal.getId(), clubId);
+        return "redirect:/clubs/" + clubId + "?success=Application+cancelled";
+    }
+
+    @PostMapping("/clubs/{clubId}/apply/reapply")
+    public String reapply(@PathVariable UUID clubId,
+                          @RequestParam(value = "applicationText", required = false) String text,
+                          @AuthenticationPrincipal com.example.clubhub4.security.AppUserPrincipal principal) {
+        applicationService.reapply(principal.getId(), clubId, text);
+        return "redirect:/clubs/" + clubId + "?success=Application+resubmitted";
     }
 }

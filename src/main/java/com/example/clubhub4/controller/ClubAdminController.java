@@ -5,6 +5,7 @@ import com.example.clubhub4.dto.MemberListItem;
 import com.example.clubhub4.dto.PostForm;
 import com.example.clubhub4.dto.PostCardView;
 import com.example.clubhub4.security.AppUserPrincipal;
+import com.example.clubhub4.service.ImageStorageService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -22,6 +23,7 @@ import java.util.UUID;
 public class ClubAdminController {
 
     private final ClubAdminService service;
+    private final ImageStorageService imageStorageService;
 
     // 1) Admin feed — only own club posts
     @GetMapping("/feed")
@@ -40,8 +42,11 @@ public class ClubAdminController {
 
     // 2) Create/Edit/Delete posts
     @GetMapping("/posts/new")
-    public String newPost(Model model) {
+    public String newPost(@AuthenticationPrincipal AppUserPrincipal principal, Model model) {
         model.addAttribute("form", new PostForm());
+        // Add club for banner
+        var club = service.getMyClubCard(principal.getId());
+        model.addAttribute("club", club);
         return "clubadmin/post-form";
     }
 
@@ -49,11 +54,10 @@ public class ClubAdminController {
     public String create(@AuthenticationPrincipal AppUserPrincipal principal,
                          @Valid @ModelAttribute("form") PostForm form,
                          BindingResult binding,
-                         Model model) {
-        if (binding.hasErrors()) {
-            return "clubadmin/post-form";
-        }
-        UUID id = service.createPost(principal.getId(), form);
+                         @RequestParam(value = "image", required = false) org.springframework.web.multipart.MultipartFile image) {
+        if (binding.hasErrors()) return "clubadmin/post-form";
+        String url = (image != null && !image.isEmpty()) ? imageStorageService.saveImage(image) : null;
+        UUID id = service.createPost(principal.getId(), form, url);
         return "redirect:/club/posts/" + id + "/edit?created";
     }
 
@@ -66,20 +70,28 @@ public class ClubAdminController {
         form.setContent(post.getContent());
         model.addAttribute("form", form);
         model.addAttribute("postId", id);
+        // Add current image if you show it in the form
+        model.addAttribute("currentImageUrl", post.getImageUrl());
+        // Add club for banner
+        var club = service.getMyClubCard(principal.getId());
+        model.addAttribute("club", club);
         return "clubadmin/post-form";
     }
+
+
 
     @PostMapping("/posts/{id}")
     public String update(@AuthenticationPrincipal AppUserPrincipal principal,
                          @PathVariable("id") UUID id,
                          @Valid @ModelAttribute("form") PostForm form,
                          BindingResult binding,
-                         Model model) {
+                         @RequestParam(value = "image", required = false) org.springframework.web.multipart.MultipartFile image,
+                         @RequestParam(value = "removeImage", defaultValue = "false") boolean removeImage) {
         if (binding.hasErrors()) {
-            model.addAttribute("postId", id);
             return "clubadmin/post-form";
         }
-        service.updatePost(principal.getId(), id, form);
+        String url = (image != null && !image.isEmpty()) ? imageStorageService.saveImage(image) : null;
+        service.updatePost(principal.getId(), id, form, url, removeImage);
         return "redirect:/club/feed?updated";
     }
 

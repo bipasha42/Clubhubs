@@ -1,7 +1,9 @@
 package com.example.clubhub4.controller;
 
 import com.example.clubhub4.dto.SignUpForm;
+import com.example.clubhub4.repository.UniversityRepository;
 import com.example.clubhub4.service.SignupService;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -17,42 +19,39 @@ import com.example.clubhub4.security.AppUserPrincipal;
 public class AuthController {
 
     private final SignupService signupService;
+    private final UniversityRepository universityRepository;
 
     @GetMapping("/login")
     public String login(@AuthenticationPrincipal AppUserPrincipal principal) {
-        // If already logged in, bounce to role page
-        if (principal != null) {
-            return "redirect:/student/feed";
-        }
+        if (principal != null) return "redirect:/student/feed";
         return "login";
     }
 
-    // Show signup page (alias /register too)
     @GetMapping({"/signup", "/register"})
     public String signupForm(Model model) {
         model.addAttribute("form", new SignUpForm());
+        model.addAttribute("universities", universityRepository.findAllByOrderByNameAsc());
         return "signup";
     }
 
-    // Handle signup
     @PostMapping({"/signup", "/register"})
     public String doSignup(@Valid @ModelAttribute("form") SignUpForm form,
                            BindingResult binding,
                            Model model) {
         if (binding.hasErrors()) {
+            model.addAttribute("universities", universityRepository.findAllByOrderByNameAsc());
             return "signup";
         }
         try {
             signupService.registerStudent(form);
+            return "redirect:/login?registered";
         } catch (IllegalArgumentException ex) {
             model.addAttribute("error", ex.getMessage());
+            model.addAttribute("universities", universityRepository.findAllByOrderByNameAsc());
             return "signup";
         }
-        // redirect to login with a flag to show a “registered” message
-        return "redirect:/login?registered";
     }
 
-    // Render a logout page with a button that POSTS to /logout (required by Spring Security)
     @GetMapping("/logout")
     public String logoutPage() {
         return "logout";

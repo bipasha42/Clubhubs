@@ -14,6 +14,10 @@ public interface ClubApplicationRepository extends JpaRepository<ClubApplication
     boolean existsByClub_IdAndUser_Id(UUID clubId, UUID userId);
     Optional<ClubApplication> findByClub_IdAndUser_Id(UUID clubId, UUID userId);
 
+    Optional<ClubApplication> findByClub_IdAndUser_IdAndStatus(UUID clubId, UUID userId, ApplicationStatus status);
+
+    long deleteByClub_IdAndUser_IdAndStatus(UUID clubId, UUID userId, ApplicationStatus status);
+
     @Query("""
         select new com.example.clubhub4.dto.ApplicationItem(
           a.id, u.id, concat(u.firstName,' ',u.lastName), u.email,
@@ -33,7 +37,6 @@ public interface ClubApplicationRepository extends JpaRepository<ClubApplication
         """)
     Optional<ClubApplication> findByIdForAdmin(@Param("appId") UUID appId, @Param("adminUserId") UUID adminUserId);
 
-    // For explore page status badges
     @Query("select a from ClubApplication a where a.user.id = :userId and a.club.id in :clubIds")
     List<ClubApplication> findByUserAndClubs(@Param("userId") UUID userId, @Param("clubIds") Collection<UUID> clubIds);
 }

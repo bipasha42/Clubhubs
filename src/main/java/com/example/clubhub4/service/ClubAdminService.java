@@ -41,17 +41,19 @@ public class ClubAdminService {
 
     // 2) CRUD posts — enforced to club ownership
     @Transactional
-    public UUID createPost(UUID adminUserId, PostForm form) {
+    public UUID createPost(UUID adminUserId, PostForm form, String imageUrl) {
         Club club = getMyClub(adminUserId);
         User author = userRepository.findById(adminUserId).orElseThrow();
+
+        if ((form.getContent() == null || form.getContent().isBlank()) && (imageUrl == null || imageUrl.isBlank())) {
+            throw new IllegalArgumentException("Post cannot be empty");
+        }
 
         Post p = new Post();
         p.setClub(club);
         p.setAuthor(author);
-        p.setContent(form.getContent().trim());
-        p.setCreatedAt(OffsetDateTime.now());
-        p.setUpdatedAt(OffsetDateTime.now());
-
+        p.setContent(form.getContent() == null ? "" : form.getContent().trim());
+        p.setImageUrl(imageUrl);
         p = postRepository.save(p);
         return p.getId();
     }
@@ -63,10 +65,15 @@ public class ClubAdminService {
     }
 
     @Transactional
-    public void updatePost(UUID adminUserId, UUID postId, PostForm form) {
+    public void updatePost(UUID adminUserId, UUID postId, PostForm form, String newImageUrl, boolean removeImage) {
         Post p = getMyClubPost(adminUserId, postId);
-        p.setContent(form.getContent().trim());
-        p.setUpdatedAt(OffsetDateTime.now());
+        if (form.getContent() != null) p.setContent(form.getContent().trim());
+        if (removeImage) {
+            p.setImageUrl(null);
+        } else if (newImageUrl != null && !newImageUrl.isBlank()) {
+            p.setImageUrl(newImageUrl);
+        }
+        p.setUpdatedAt(java.time.OffsetDateTime.now());
         postRepository.save(p);
     }
 

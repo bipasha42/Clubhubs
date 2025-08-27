@@ -12,6 +12,7 @@ public class FeedCardView {
     private final String clubName;
     private final String authorFullName;
     private final String content;
+    private final String imageUrl;
     private final String preview;
     private final OffsetDateTime createdAt;
     private final long likeCount;
@@ -22,6 +23,7 @@ public class FeedCardView {
                         String clubName,
                         String authorFullName,
                         String content,
+                        String imageUrl,
                         OffsetDateTime createdAt,
                         long likeCount,
                         long commentCount) {
@@ -30,6 +32,7 @@ public class FeedCardView {
         this.clubName = clubName;
         this.authorFullName = authorFullName;
         this.content = content;
+        this.imageUrl = imageUrl;
         this.preview = firstLine(content, 160);
         this.createdAt = createdAt;
         this.likeCount = likeCount;

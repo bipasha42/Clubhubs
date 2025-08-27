@@ -24,18 +24,30 @@ public class ApplicationService {
         if (userId == null) return false;
         User user = userRepository.findById(userId).orElse(null);
         if (user == null || user.getRole() != Role.STUDENT) return false;
-
         Club club = clubRepository.findById(clubId).orElse(null);
         if (club == null) return false;
 
         if (user.getUniversityId() == null || !user.getUniversityId().equals(club.getUniversityId())) return false;
         if (clubMemberRepository.existsByClub_IdAndUser_Id(clubId, userId)) return false;
-        if (clubApplicationRepository.existsByClub_IdAndUser_Id(clubId, userId)) return false;
-        return true;
+
+        // No existing application or it's been deleted; if exists and REJECTED, use canReapply()
+        return clubApplicationRepository.findByClub_IdAndUser_Id(clubId, userId).isEmpty();
     }
 
     public Optional<ApplicationStatus> applicationStatus(UUID userId, UUID clubId) {
         return clubApplicationRepository.findByClub_IdAndUser_Id(clubId, userId).map(ClubApplication::getStatus);
+    }
+
+    public boolean canReapply(UUID userId, UUID clubId) {
+        return clubApplicationRepository
+                .findByClub_IdAndUser_IdAndStatus(clubId, userId, ApplicationStatus.REJECTED)
+                .isPresent();
+    }
+
+    public boolean canCancel(UUID userId, UUID clubId) {
+        return clubApplicationRepository
+                .findByClub_IdAndUser_IdAndStatus(clubId, userId, ApplicationStatus.PENDING)
+                .isPresent();
     }
 
     @Transactional
@@ -44,15 +56,12 @@ public class ApplicationService {
         if (user.getRole() != Role.STUDENT) throw new AccessDeniedException("Only students can apply");
         Club club = clubRepository.findById(clubId).orElseThrow();
 
-        // University match
         if (user.getUniversityId() == null || !user.getUniversityId().equals(club.getUniversityId())) {
             throw new AccessDeniedException("You can only apply to clubs in your university");
         }
-        // Not a member already
         if (clubMemberRepository.existsByClub_IdAndUser_Id(clubId, userId)) {
             throw new IllegalStateException("You are already a member of this club");
         }
-        // Unique application
         if (clubApplicationRepository.existsByClub_IdAndUser_Id(clubId, userId)) {
             throw new IllegalStateException("You already applied to this club");
         }
@@ -66,5 +75,31 @@ public class ApplicationService {
 
         app = clubApplicationRepository.save(app);
         return app.getId();
+    }
+
+    @Transactional
+    public boolean cancelPending(UUID userId, UUID clubId) {
+        // Only pending apps can be cancelled; delete row to free up re-apply
+        long deleted = clubApplicationRepository.deleteByClub_IdAndUser_IdAndStatus(
+                clubId, userId, ApplicationStatus.PENDING
+        );
+        return deleted > 0;
+    }
+
+    @Transactional
+    public void reapply(UUID userId, UUID clubId, String text) {
+        // Re-open a REJECTED application into PENDING (same row; keeps unique constraint)
+        ClubApplication app = clubApplicationRepository
+                .findByClub_IdAndUser_IdAndStatus(clubId, userId, ApplicationStatus.REJECTED)
+                .orElseThrow(() -> new IllegalStateException("No rejected application to reapply"));
+
+        app.setStatus(ApplicationStatus.PENDING);
+        app.setAppliedAt(OffsetDateTime.now());
+        app.setProcessedAt(null);
+        app.setProcessedBy(null);
+        if (text != null && !text.isBlank()) {
+            app.setApplicationText(text.trim());
+        }
+        clubApplicationRepository.save(app);
     }
 }

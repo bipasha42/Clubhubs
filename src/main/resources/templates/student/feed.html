@@ -1,48 +1,113 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8"/>
-    <title>Your Feed</title>
-    <style>
-        body { font-family: system-ui, sans-serif; margin: 24px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; }
-        .card { border: 1px solid #ddd; border-radius: 10px; padding: 12px; }
-        .meta { color: #666; font-size: 0.9em; margin-bottom: 6px; }
-        nav a { margin: 0 6px; }
-    </style>
-</head>
-<body>
-<h2>Your Feed</h2>
+<head th:replace="fragments/common :: head('Your Feed')"></head>
+<body class="page-feed" data-rows="3">
+<header th:replace="fragments/common :: nav"></header>
 
-<p style="margin:8px 0;">
-    <a th:href="@{/me/posts/new}">+ Create new post on my club</a>
-    <a th:href="@{/me/notifications}" style="margin-left: 10px;">My Notifications</a>
-</p>
+<!-- Narrow container so posts don't stretch across huge screens -->
+<main class="container narrow">
+    <h2 class="m-0">Your Feed</h2>
 
-<div th:if="${posts.empty}">
-    <p>No posts yet. Follow clubs or join one to see posts here.</p>
-</div>
+    <p class="mt-1">
+        <a class="btn" th:href="@{/me/posts/new}">+ Create new post on my club</a>
+        <a class="btn ghost" th:href="@{/student/university/clubs}">Clubs in my university</a>
+    </p>
 
-<div class="grid" th:if="${!posts.empty}">
-    <div class="card" th:each="p : ${posts.content}">
-        <div class="meta">
-            <strong><a th:href="@{'/clubs/' + ${p.clubId}}" th:text="${p.clubName}">Club</a></strong>
-            · <span th:text="${#temporals.format(p.createdAt, 'yyyy-MM-dd HH:mm')}">Time</span>
-            · <span th:text="${p.likeCount}">0</span> likes
-            · <span th:text="${p.commentCount}">0</span> comments
-        </div>
-        <div>
-            <a th:href="@{'/clubs/' + ${p.clubId} + '/posts/' + ${p.postId}}">
-                <span th:text="${p.preview}">Post preview</span>
-            </a>
-        </div>
+    <div th:if="${posts.empty}" class="mt-2">
+        <p class="help">No posts yet. Follow clubs or join one to see posts here.</p>
     </div>
-</div>
 
-<nav th:if="${posts.totalPages > 1}" style="margin-top: 14px;">
-    <a th:if="${!posts.first}" th:href="@{/student/feed(page=${page-1}, size=${size})}">Prev</a>
-    <span>Page <span th:text="${posts.number + 1}"></span> of <span th:text="${posts.totalPages}"></span></span>
-    <a th:if="${!posts.last}" th:href="@{/student/feed(page=${page+1}, size=${size})}">Next</a>
-</nav>
+    <div class="v-stack mt-2" th:if="${!posts.empty}">
+        <!-- Clickable stacked post card -->
+        <a class="card feed-card"
+           th:each="p : ${posts.content}"
+           th:href="@{'/clubs/' + ${p.clubId} + '/posts/' + ${p.postId}}"
+           style="text-decoration: none; color: inherit; display: block;">
+
+            <!-- Header: avatar + club name + time -->
+            <div class="feed-head">
+                <div class="avatar">
+                    <span th:text="${#strings.substring(#strings.trim(p.clubName),0,2)}">CL</span>
+                </div>
+                <div class="feed-head__meta">
+                    <div class="club" th:text="${p.clubName}">Club</div>
+                    <div class="muted" th:text="${#temporals.format(p.createdAt, 'yyyy-MM-dd HH:mm')}">time</div>
+                </div>
+            </div>
+
+            <!-- Content preview -->
+            <div class="feed-content">
+                <div class="preview clamp-3" th:text="${p.preview}">Post preview…</div>
+            </div>
+
+            <!-- Optional image (full width, capped height) -->
+            <div th:if="${p.imageUrl != null}" class="media mt-1">
+                <img th:src="${p.imageUrl}" alt="" loading="lazy">
+            </div>
+
+            <!-- Stats only -->
+            <div class="feed-actions">
+                <div class="muted">
+                    <strong th:text="${p.likeCount}">0</strong> likes
+                    <span class="dot">•</span>
+                    <strong th:text="${p.commentCount}">0</strong> comments
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <!-- Pagination -->
+    <div class="h-stack center mt-3" th:if="${posts.totalPages > 1}">
+        <a class="btn subtle" th:if="${!posts.first}" th:href="@{/student/feed(page=${page-1}, size=${size})}">Prev</a>
+        <span>Page <strong th:text="${posts.number + 1}"></strong> / <span th:text="${posts.totalPages}"></span></span>
+        <a class="btn subtle" th:if="${!posts.last}" th:href="@{/student/feed(page=${page+1}, size=${size})}">Next</a>
+    </div>
+</main>
+
+<!-- Page-scoped CSS: narrow width + image cap -->
+<style>
+    /* Narrow, centered column (social feed feel) */
+    .container.narrow {
+        width: min(92vw, 860px);
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .feed-card { padding: 14px 16px; }
+    .feed-card:hover {
+        background-color: var(--bg-soft);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    .feed-head { display: grid; grid-template-columns: 48px 1fr; gap: 10px; align-items: center; }
+    .feed-head .avatar {
+        width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center;
+        text-decoration: none; color: #fff; font-weight: 800;
+        background: linear-gradient(135deg, #111827, #374151);
+    }
+    .feed-head__meta .club { color: var(--text); font-weight: 700; text-decoration: none; }
+    .feed-head__meta .club:hover { text-decoration: underline; }
+
+    .feed-content { margin-top: 6px; }
+
+    /* Cap image height so photos don’t dominate on large screens */
+    .feed-card .media img {
+        display: block;
+        width: 100%;
+        height: auto;
+        max-height: 520px;     /* adjust to taste (e.g., 420px) */
+        object-fit: cover;
+        border-radius: 12px;
+    }
+    @media (max-width: 640px) {
+        .feed-card .media img { max-height: 360px; }
+    }
+
+    .feed-actions {
+        margin-top: 10px;
+        display: flex; align-items: center; justify-content: space-between;
+    }
+    .dot { color: var(--muted); margin: 0 6px; }
+</style>
 </body>
 </html>

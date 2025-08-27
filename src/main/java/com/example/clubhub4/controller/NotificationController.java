@@ -15,7 +15,7 @@ import java.util.UUID;
 
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("/me/notifications")
+@RequestMapping("/student/notifications")
 public class NotificationController {
 
     private final NotificationService service;
@@ -39,12 +39,12 @@ public class NotificationController {
         service.markOneRead(principal.getId(), id);
         return (back != null && back.startsWith("/") && !back.contains("://"))
                 ? "redirect:" + back
-                : "redirect:/me/notifications";
+                : "redirect:/student/notifications";
     }
 
     @PostMapping("/read-all")
     public String markAll(@AuthenticationPrincipal AppUserPrincipal principal) {
         service.markAllRead(principal.getId());
-        return "redirect:/me/notifications";
+        return "redirect:/student/notifications";
     }
 }

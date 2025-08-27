@@ -1,51 +1,97 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8"/>
-    <title>Manage Club Admin</title>
-    <style>
-        body { font-family: system-ui, sans-serif; margin: 24px; }
-        label { display:block; margin-top: 8px; }
-        input { width: 360px; max-width: 100%; }
-        .err { color: #b00020; }
-        .ok { color: #0a7f27; }
-    </style>
-</head>
+<head th:replace="fragments/common :: head('Manage Club Admin')"></head>
 <body>
-<h2>Manage Club Admin</h2>
+<header th:replace="fragments/common :: nav"></header>
 
-<div th:if="${param.success}">
-    <p class="ok">Club admin updated.</p>
-</div>
-<div th:if="${error}">
-    <p class="err" th:text="${error}">Error</p>
-</div>
+<main class="container">
+    <!-- Banner -->
+    <section class="cover">
+        <div class="cover__title"
+             th:text="${club != null ? club.name : (clubName != null ? clubName : 'Manage Club')}">
+            Manage Club
+        </div>
+    </section>
 
-<form th:action="@{'/university/clubs/' + ${clubId} + '/manage'}" th:object="${form}" method="post">
-    <label>Email</label>
-    <input th:field="*{adminEmail}" type="email" required>
-    <div class="err" th:if="${#fields.hasErrors('adminEmail')}" th:errors="*{adminEmail}"></div>
+    <!-- Bar -->
+    <section class="community-bar card">
+        <div class="bar-left">
+            <div class="avatar lg">⚙️</div>
+            <div class="name"
+                 th:text="'Manage ' + (${club != null ? club.name : (clubName != null ? clubName : 'Club')}) + ' admin'">
+                Manage Club admin
+            </div>
+        </div>
+        <div class="bar-right">
+            <a class="btn ghost" th:href="@{/university/clubs}">Back to list</a>
+        </div>
+    </section>
 
-    <label>First name</label>
-    <input th:field="*{adminFirstName}" required>
-    <div class="err" th:if="${#fields.hasErrors('adminFirstName')}" th:errors="*{adminFirstName}"></div>
+    <section class="layout-2col">
+        <!-- MAIN -->
+        <section>
+            <article class="card editor mt-2">
+                <div th:if="${param.success}" class="toast ok">Club admin updated.</div>
+                <div th:if="${error}" class="toast err" th:text="${error}">Error</div>
 
-    <label>Last name</label>
-    <input th:field="*{adminLastName}" required>
-    <div class="err" th:if="${#fields.hasErrors('adminLastName')}" th:errors="*{adminLastName}"></div>
+                <form th:action="@{'/university/clubs/' + ${clubId} + '/manage'}"
+                      th:object="${form}" method="post">
+                    <h3 class="m-0">Club Admin account</h3>
 
-    <label>New password (leave blank to keep current)</label>
-    <input th:field="*{adminPassword}" type="password">
-    <div class="err" th:if="${#fields.hasErrors('adminPassword')}" th:errors="*{adminPassword}"></div>
+                    <div class="form-row mt-1">
+                        <div>
+                            <label>Email</label>
+                            <!-- Prefilled from form.adminEmail -->
+                            <input th:field="*{adminEmail}" type="email" required>
+                            <div class="err" th:if="${#fields.hasErrors('adminEmail')}" th:errors="*{adminEmail}"></div>
+                        </div>
+                        <div>
+                            <label>First name</label>
+                            <!-- Prefilled from form.adminFirstName -->
+                            <input th:field="*{adminFirstName}" type="text" required>
+                            <div class="err" th:if="${#fields.hasErrors('adminFirstName')}" th:errors="*{adminFirstName}"></div>
+                        </div>
+                    </div>
 
-    <label>Confirm new password</label>
-    <input th:field="*{adminConfirmPassword}" type="password">
+                    <div class="form-row">
+                        <div>
+                            <label>Last name</label>
+                            <!-- Prefilled from form.adminLastName -->
+                            <input th:field="*{adminLastName}" type="text" required>
+                            <div class="err" th:if="${#fields.hasErrors('adminLastName')}" th:errors="*{adminLastName}"></div>
+                        </div>
+                        <div>
+                            <label>New password (optional)</label>
+                            <!-- Blank by default -->
+                            <input th:field="*{adminPassword}" type="password" placeholder="Leave blank to keep current">
+                            <div class="err" th:if="${#fields.hasErrors('adminPassword')}" th:errors="*{adminPassword}"></div>
+                        </div>
+                    </div>
 
-    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-    <div style="margin-top: 12px;">
-        <button type="submit">Save</button>
-        <a th:href="@{/university/clubs}" style="margin-left: 8px;">Back to list</a>
-    </div>
-</form>
+                    <label class="mt-1">Confirm new password</label>
+                    <input th:field="*{adminConfirmPassword}" type="password" placeholder="Leave blank to keep current">
+                    <div class="err" th:if="${#fields.hasErrors('adminConfirmPassword')}" th:errors="*{adminConfirmPassword}"></div>
+
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                    <div class="editor-actions">
+                        <button class="btn" type="submit">Save</button>
+                        <a class="btn subtle" th:href="@{/university/clubs}">Cancel</a>
+                    </div>
+                </form>
+            </article>
+        </section>
+
+        <!-- SIDEBAR -->
+        <aside class="card sidebar">
+            <h4 class="m-0">Manage</h4>
+            <nav class="sidebar-links mt-1">
+                <a class="side-link" th:href="@{/university/clubs}">Clubs</a>
+                <a class="side-link primary" th:href="@{/university/clubs}">Save & back</a>
+                <a class="side-link" th:href="@{/university/clubs/new}">Create new club</a>
+            </nav>
+        </aside>
+    </section>
+</main>
 </body>
 </html>

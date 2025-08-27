@@ -2,8 +2,11 @@ package com.example.clubhub4.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+
+import java.util.UUID;
 
 @Data
 public class SignUpForm {
@@ -22,4 +25,7 @@ public class SignUpForm {
 
     @NotBlank
     private String confirmPassword;
+
+    @NotNull
+    private UUID universityId;
 }

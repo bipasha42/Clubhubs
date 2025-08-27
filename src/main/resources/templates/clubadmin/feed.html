@@ -1,57 +1,118 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8"/>
-    <title th:text="${club.name} + ' — Admin Feed'">Club Admin Feed</title>
-    <style>
-        body { font-family: system-ui, sans-serif; margin: 24px; }
-        .meta { color:#666; margin-bottom: 12px; }
-        .post { border:1px solid #ddd; border-radius:10px; padding:12px; margin-bottom:12px; }
-        .actions a, .actions form { display:inline-block; margin-right:8px; }
-    </style>
-</head>
+<head th:replace="fragments/common :: head(${club.name} + ' — Admin Feed')"></head>
 <body>
-<h2 th:text="${club.name}">Club Name</h2>
-<div class="meta">
-    <span th:text="${club.universityName}">University</span> ·
-    <span th:text="${club.followerCount}">0</span> followers ·
-    <span th:text="${club.memberCount}">0</span> members ·
-    <a th:href="@{'/clubs/' + ${club.id}}">View public page</a> ·
-    <a th:href="@{/club/members}">Members</a> ·
-    <a th:href="@{/club/applications}">Club Applications</a>
-</div>
+<header th:replace="fragments/common :: nav"></header>
 
-<div th:if="${param.created}"><p style="color:green;">Post created.</p></div>
-<div th:if="${param.updated}"><p style="color:green;">Post updated.</p></div>
-<div th:if="${param.deleted}"><p style="color:green;">Post deleted.</p></div>
+<main class="container">
+    <!-- Banner -->
+    <section class="cover">
+        <div class="cover__title" th:text="${club.name}">Club Name</div>
+    </section>
 
-<p><a th:href="@{/club/posts/new}">+ New post</a></p>
+    <!-- Community bar -->
+    <section class="community-bar card">
+        <div class="bar-left">
+<!--            <div class="avatar lg">-->
+<!--                <span th:text="${#strings.substring(#strings.trim(club.name), 0, 2)}">CL</span>-->
+<!--            </div>-->
+<!--            <div class="name">-->
+<!--                <span th:text="${club.name}">Club Name</span>-->
+<!--            </div>-->
+        </div>
+        <div class="bar-right">
+            <a class="btn ghost" th:href="@{'/clubs/' + ${club.id}}">View public</a>
+            <a class="btn big" th:href="@{/club/posts/new}">+ New post</a>
+        </div>
+    </section>
 
-<div th:if="${posts.empty}">
-    <p>No posts yet.</p>
-</div>
+    <section class="layout-2col">
+        <!-- MAIN COLUMN -->
+        <section>
+            <div class="mt-1">
+                <div th:if="${param.created}" class="toast ok">Post created.</div>
+                <div th:if="${param.updated}" class="toast ok">Post updated.</div>
+                <div th:if="${param.deleted}" class="toast ok">Post deleted.</div>
+            </div>
 
-<div th:each="p : ${posts.content}" class="post">
-    <div class="meta">
-        <span th:text="${#temporals.format(p.createdAt, 'yyyy-MM-dd HH:mm')}">Time</span>
-        · <span th:text="${p.likeCount}">0</span> likes
-        · <span th:text="${p.commentCount}">0</span> comments
-    </div>
-    <div th:text="${p.preview}">Post preview...</div>
-    <div class="actions" style="margin-top:8px;">
-        <a th:href="@{'/club/posts/' + ${p.id} + '/edit'}">Edit</a>
-        <form th:action="@{'/club/posts/' + ${p.id} + '/delete'}" method="post" style="margin:0;">
-            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-            <button type="submit" onclick="return confirm('Delete this post?');">Delete</button>
-        </form>
-        <a th:href="@{'/clubs/' + ${club.id} + '/posts/' + ${p.id}}">View</a>
-    </div>
-</div>
+            <h3 class="mt-2">Your posts</h3>
 
-<nav th:if="${posts.totalPages > 1}" style="margin-top: 14px;">
-    <a th:if="${!posts.first}" th:href="@{/club/feed(page=${page-1}, size=${size})}">Prev</a>
-    <span>Page <span th:text="${posts.number + 1}"></span> of <span th:text="${posts.totalPages}"></span></span>
-    <a th:if="${!posts.last}" th:href="@{/club/feed(page=${page+1}, size=${size})}">Next</a>
-</nav>
+            <div th:if="${posts.empty}" class="mt-1">
+                <p class="help">No posts yet. Create your first post.</p>
+            </div>
+
+            <!-- Post list (thumb on right when present) -->
+            <div class="post-list v-stack mt-1" th:if="${!posts.empty}">
+                <article class="card post-card"
+                         th:each="p : ${posts.content}"
+                         th:classappend="${p.imageUrl != null} ? ' has-thumb' : ' no-thumb'">
+                    <div class="post-body">
+                        <div class="post-meta">
+                            <span th:text="${#temporals.format(p.createdAt, 'yyyy-MM-dd HH:mm')}">Time</span>
+                            <span class="dot">•</span>
+                            <span th:text="${p.likeCount}">0</span> <span class="muted">likes</span>
+                            <span class="dot">•</span>
+                            <span th:text="${p.commentCount}">0</span> <span class="muted">comments</span>
+                        </div>
+
+                        <a class="post-title" th:href="@{'/clubs/' + ${club.id} + '/posts/' + ${p.id}}">
+                            <div class="clamp-3" th:text="${p.preview}">Post preview…</div>
+                        </a>
+
+                        <!-- Actions always under text, aligned consistently -->
+                        <div class="post-actions">
+                            <a class="btn ghost" th:href="@{'/club/posts/' + ${p.id} + '/edit'}">Edit</a>
+                            <form th:action="@{'/club/posts/' + ${p.id} + '/delete'}"
+                                  method="post" class="inline" data-confirm="Delete this post?">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                <button class="btn subtle" type="submit">Delete</button>
+                            </form>
+                            <a class="btn subtle" th:href="@{'/clubs/' + ${club.id} + '/posts/' + ${p.id}}">View</a>
+                        </div>
+                    </div>
+
+                    <!-- Thumbnail on the right -->
+                    <a th:if="${p.imageUrl != null}" class="thumb right" th:href="@{'/clubs/' + ${club.id} + '/posts/' + ${p.id}}">
+                        <img th:src="${p.imageUrl}" alt="" loading="lazy">
+                    </a>
+                </article>
+            </div>
+
+            <!-- Pagination -->
+            <div class="h-stack center mt-3" th:if="${posts.totalPages > 1}">
+                <a class="btn subtle" th:if="${!posts.first}" th:href="@{/club/feed(page=${page-1}, size=${size})}">Prev</a>
+                <span>Page <strong th:text="${posts.number + 1}"></strong> / <span th:text="${posts.totalPages}"></span></span>
+                <a class="btn subtle" th:if="${!posts.last}" th:href="@{/club/feed(page=${page+1}, size=${size})}">Next</a>
+            </div>
+        </section>
+
+        <!-- SIDEBAR -->
+        <aside class="card sidebar">
+            <h4 class="m-0">Manage</h4>
+
+            <nav class="sidebar-links v-stack mt-1">
+                <a class="side-link" th:href="@{/club/members}">Members</a>
+                <a class="side-link" th:href="@{/club/applications}">Applications</a>
+                <a class="side-link primary" th:href="@{/club/posts/new}">+ New post</a>
+            </nav>
+
+            <hr style="border:0;border-top:1px solid var(--border); margin:12px 0;">
+
+            <h4 class="m-0">Stats</h4>
+            <div class="meta mt-1">
+                <div><strong>University</strong></div>
+                <div th:text="${club.universityName}">University</div>
+            </div>
+            <div class="meta mt-1">
+                <div><strong>Members</strong></div>
+                <div th:text="${club.memberCount}">0</div>
+            </div>
+            <div class="meta mt-1">
+                <div><strong>Followers</strong></div>
+                <div th:text="${club.followerCount}">0</div>
+            </div>
+        </aside>
+    </section>
+</main>
 </body>
 </html>
