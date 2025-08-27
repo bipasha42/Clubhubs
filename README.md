@@ -43,6 +43,7 @@ ClubHub/
 │── README.md # Documentation
 
 ---
+<img width="1920" height="1080" alt="Screenshot (171)" src="https://github.com/user-attachments/assets/7c172df6-ff49-491b-ba2b-bdeca23fe05f" />
 
 ## 🚀 Installation & Setup
 
