@@ -67,8 +67,14 @@ mvn spring-boot:run
 4️⃣ Access the app
 
 👉 Open: http://localhost:8080
-🧩 Development Process
 
+<img width="1920" height="1080" alt="Screenshot (171)" src="https://github.com/user-attachments/assets/1d5af577-4c5d-4fae-a351-9cbb69d7035f" />
+<img width="1920" height="1080" alt="Screenshot (172)" src="https://github.com/user-attachments/assets/e795f359-2cf1-4b39-8d7c-7c0f17401cea" />
+
+<img width="1920" height="1080" alt="Screenshot (173)" src="https://github.com/user-attachments/assets/4dd374f9-f45f-4d5e-b1ea-5ce6f7257d0e" />
+<img width="1920" height="1080" alt="Screenshot (174)" src="https://github.com/user-attachments/assets/c3513975-c115-437c-969e-c55bbff78281" />
+
+🧩 Development Process
 We followed a structured Software Development Lifecycle (SDLC):
 
 Requirement Analysis
